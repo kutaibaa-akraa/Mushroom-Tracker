@@ -3,32 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المستشار الذكي لزراعة Agaricus bisporus</title>
+    <title>المستشار الذكي لزراعة Agaricus bisporus - النسخة المتكاملة</title>
+    
+    <!-- مكتبات خارجية -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* ========== أنماط CSS الرئيسية ========== */
+        /* ========== الأنماط الأساسية ========== */
         :root {
             --primary-dark: #1a252f;
             --accent-green: #2ecc71;
             --warning-gold: #f1c40f;
             --critical-red: #e74c3c;
+            --info-blue: #3498db;
             --spawn-color: #e8f8f5;
             --casing-color: #fef9e7;
             --pinning-color: #ebf5fb;
             --cropping-color: #f5eef8;
             --text-main: #2c3e50;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.05);
+            --shadow-medium: 0 4px 12px rgba(0,0,0,0.1);
+            --radius-small: 6px;
+            --radius-medium: 12px;
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ========== إعادة ضبط الأنماط ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #f4f7f6;
             color: var(--text-main);
-            margin: 0; padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        .main-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+        /* ========== تخطيط الصفحة ========== */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
+        /* ========== الهيدر ========== */
         header {
             background: var(--primary-dark);
             color: white;
@@ -36,253 +60,397 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-medium);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .header-content h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .header-content small {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .api-status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-small);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            align-self: flex-start;
+        }
+
+        /* ========== لوحة التحكم ========== */
         .dashboard {
             display: grid;
             grid-template-columns: 320px 1fr 350px;
             gap: 20px;
             padding: 20px;
+            flex: 1;
         }
 
-        /* تقويم متطور */
-        .calendar-section { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 20px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
         }
-        
+
+        /* ========== الألواح الجانبية ========== */
+        .panel {
+            background: white;
+            border-radius: var(--radius-medium);
+            padding: 20px;
+            box-shadow: var(--shadow-light);
+            transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+        }
+
+        .panel:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .panel h3 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-green);
+            font-size: 1.2rem;
+        }
+
+        .panel h4 {
+            color: var(--primary-dark);
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+
+        /* ========== التقويم ========== */
+        .calendar-section {
+            background: white;
+            border-radius: var(--radius-medium);
+            padding: 20px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 8px;
-            margin-top: 15px;
+            margin-bottom: 1.5rem;
         }
 
         .day-card {
             border: 1px solid #eee;
             aspect-ratio: 1/1.1;
             padding: 8px;
-            border-radius: 8px;
+            border-radius: var(--radius-small);
             font-size: 0.75rem;
             position: relative;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--transition-medium);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: white;
         }
 
-        .day-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1); 
-            z-index: 5; 
-            background: white !important; 
+        .day-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            z-index: 5;
         }
 
-        .day-card.active { 
-            border: 3px solid var(--accent-green) !important; 
-            animation: pulseBorder 2s infinite; 
-        }
-        
-        @keyframes pulseBorder { 
-            0% { border-color: #2ecc71; } 
-            50% { border-color: #fff; } 
-            100% { border-color: #2ecc71; } 
+        .day-card.active {
+            border: 3px solid var(--accent-green);
+            animation: pulseBorder 2s infinite;
         }
 
-        .critical-transition { 
-            border: 2px dashed var(--critical-red) !important; 
+        @keyframes pulseBorder {
+            0% { border-color: var(--accent-green); }
+            50% { border-color: #fff; }
+            100% { border-color: var(--accent-green); }
         }
 
-        /* الأقسام الجانبية */
-        .panel { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-        }
-        
-        .status-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 5px;
+        .critical-transition {
+            border: 2px dashed var(--critical-red);
+            background: #fff5f5;
         }
 
-        /* نظام التنبيهات */
+        /* ========== المخططات ========== */
+        .chart-container {
+            height: 300px;
+            margin-top: auto;
+            position: relative;
+        }
+
+        /* ========== ألوان المراحل ========== */
+        .bg-spawn { background-color: var(--spawn-color); }
+        .bg-casing { background-color: var(--casing-color); }
+        .bg-pinning { background-color: var(--pinning-color); }
+        .bg-cropping { background-color: var(--cropping-color); }
+
+        /* ========== أزرار التحكم ========== */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button, .btn {
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius-small);
+            padding: 10px 15px;
+            font-family: 'Cairo';
+            font-weight: 600;
+            transition: all var(--transition-fast);
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-start {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .btn-save {
+            background: #34495e;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #2c3e50;
+        }
+
+        .btn-api {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn-api:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: var(--critical-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* ========== شريط التقدم ========== */
+        .progress-bar-wrap {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        #main-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), #27ae60);
+            width: 0%;
+            transition: width 1s;
+        }
+
+        /* ========== التنبيهات ========== */
         .alert-box {
             padding: 12px;
             border-right: 4px solid;
             margin-bottom: 10px;
             font-size: 0.85rem;
             background: #fdfdfd;
-            border-radius: 4px;
-        }
-        .alert-critical { 
-            border-color: var(--critical-red); 
-            background: #fff5f5; 
-            color: #c0392b; 
-        }
-        .alert-info { 
-            border-color: #3498db; 
-            background: #ebf5fb; 
+            border-radius: var(--radius-small);
+            animation: slideIn 0.3s ease;
         }
 
-        /* شريط المهام */
-        .task-list { 
-            list-style: none; 
-            padding: 0; 
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
+
+        .alert-critical {
+            border-color: var(--critical-red);
+            background: #fff5f5;
+            color: #c0392b;
+        }
+
+        .alert-warning {
+            border-color: var(--warning-gold);
+            background: #fef9e7;
+            color: #b7950b;
+        }
+
+        .alert-info {
+            border-color: var(--info-blue);
+            background: #ebf5fb;
+            color: #21618c;
+        }
+
+        .alert-success {
+            border-color: var(--accent-green);
+            background: #e8f8f5;
+            color: #196f3d;
+        }
+
+        /* ========== المهام اليومية ========== */
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
         .task-list li {
             padding: 10px;
             border-bottom: 1px solid #eee;
             display: flex;
             align-items: flex-start;
             gap: 10px;
-        }
-        .task-list input[type="checkbox"] { 
-            width: 18px; 
-            height: 18px; 
-            margin-top: 3px; 
+            transition: background var(--transition-fast);
         }
 
-        /* المخططات */
-        .chart-container { 
-            height: 300px; 
-            margin-top: 20px; 
+        .task-list li:hover {
+            background: #f9f9f9;
         }
 
-        /* واجهة التعليمات */
-        .edu-section { 
-            grid-column: 1 / span 3; 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 20px; 
+        .task-list input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 3px;
+            cursor: pointer;
         }
 
-        /* ألوان المراحل */
-        .bg-spawn { background-color: var(--spawn-color); }
-        .bg-casing { background-color: var(--casing-color); }
-        .bg-pinning { background-color: var(--pinning-color); }
-        .bg-cropping { background-color: var(--cropping-color); }
-
-        .progress-bar-wrap { 
-            width: 100%; 
-            height: 12px; 
-            background: #eee; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            margin: 10px 0; 
-        }
-        
-        #main-progress { 
-            height: 100%; 
-            background: linear-gradient(90deg, #2ecc71, #27ae60); 
-            width: 0%; 
-            transition: width 1s; 
+        .task-list input[type="checkbox"]:checked + span {
+            text-decoration: line-through;
+            color: #95a5a6;
         }
 
-        .btn-group { 
-            display: flex; 
-            gap: 10px; 
+        /* ========== قسم التعليمات ========== */
+        .edu-section {
+            grid-column: 1 / span 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
         }
-        
-        button { 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 6px; 
-            padding: 10px 15px; 
-            font-family: 'Cairo'; 
-            transition: 0.3s; 
+
+        @media (max-width: 768px) {
+            .edu-section {
+                grid-template-columns: 1fr;
+            }
         }
-        
-        .btn-start { 
-            background: var(--accent-green); 
-            color: white; 
-            font-weight: bold; 
-        }
-        
-        .btn-save { 
-            background: #34495e; 
-            color: white; 
-        }
-        
-        .btn-api { 
-            background: #9b59b6; 
-            color: white; 
-        }
-        
-        .btn-api:hover { 
-            background: #8e44ad; 
-        }
-    </style>
-    
-    <!-- أنماط خاصة بالمستشار الذكي -->
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
+
+        /* ========== المستشار الذكي ========== */
         .advisor-response {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border: 1px solid #dee2e6;
-            border-radius: 10px;
+            border-radius: var(--radius-medium);
             padding: 15px;
             margin-top: 10px;
             font-size: 0.85rem;
             line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
+            animation: fadeIn 0.5s ease;
         }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .advisor-section {
             margin-bottom: 12px;
             padding-bottom: 12px;
             border-bottom: 1px dashed #ddd;
         }
-        
+
+        .advisor-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
         .advisor-section h5 {
-            color: #2c3e50;
+            color: var(--primary-dark);
             margin: 8px 0;
             font-size: 0.9rem;
         }
-        
-        .advisor-section ul {
-            margin: 5px 0;
-            padding-right: 15px;
-        }
-        
-        .advisor-section li {
-            margin-bottom: 4px;
-        }
-        
-        .risk-high { color: #e74c3c; font-weight: bold; }
-        .risk-medium { color: #f39c12; font-weight: bold; }
-        .risk-low { color: #27ae60; font-weight: bold; }
-        
+
         .ai-recommendation {
             background-color: #e8f4fc;
-            border-right: 3px solid #3498db;
+            border-right: 3px solid var(--info-blue);
             padding: 10px;
-            border-radius: 5px;
+            border-radius: var(--radius-small);
             margin-top: 10px;
         }
-        
+
+        .risk-high { color: var(--critical-red); font-weight: bold; }
+        .risk-medium { color: var(--warning-gold); font-weight: bold; }
+        .risk-low { color: var(--accent-green); font-weight: bold; }
+
+        /* ========== مؤشر التحميل ========== */
         .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #3498db;
+            border: 2px solid var(--info-blue);
             border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
-        /* ستايلات المودال */
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========== المودالات ========== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -295,870 +463,1255 @@
             align-items: center;
             z-index: 1000;
             backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s ease;
         }
-        
+
         .modal-content {
             background: white;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: var(--radius-medium);
             width: 450px;
             max-width: 90%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease;
         }
-        
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .modal-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
             justify-content: flex-end;
         }
+
+        /* ========== حقول الإدخال ========== */
+        input, select, textarea {
+            font-family: 'Cairo';
+            border: 1px solid #ddd;
+            border-radius: var(--radius-small);
+            padding: 10px;
+            font-size: 0.9rem;
+            transition: border-color var(--transition-fast);
+            width: 100%;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+        }
+
+        input[type="date"] {
+            padding: 8px;
+            border: none;
+            background: white;
+        }
+
+        /* ========== حالة النظام ========== */
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 5px;
+            background: var(--accent-green);
+            color: white;
+        }
+
+        /* ========== التجاوب للهواتف ========== */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .btn-group {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .dashboard {
+                padding: 10px;
+                gap: 15px;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
+            }
+            
+            .day-card {
+                font-size: 0.6rem;
+                padding: 4px;
+            }
+        }
+
+        /* ========== تأثيرات إضافية ========== */
+        .glow-effect {
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
     </style>
 </head>
 
 <body>
-<!-- ========== الهيكل الرئيسي للصفحة ========== -->
-<header>
-    <div>
-        <h1 style="margin:0;">🍄 Agaricus Expert v2.1</h1>
-        <small>المرجع العلمي الشامل لزراعة الفطر الأبيض - النسخة المُحسنة</small>
-    </div>
-    <div class="btn-group">
-        <input type="date" id="startDate" style="padding:8px; border-radius:5px; border:none;">
-        <button class="btn-start" onclick="initializeProject()">بدء دورة زراعية جديدة</button>
-        <button class="btn-api" onclick="showAPISettings()">⚙️ إعدادات API</button>
-        <button class="btn-save" onclick="saveToDisk()">💾 تصدير البيانات</button>
-    </div>
-</header>
-
-<div class="dashboard">
-    <!-- ========== العمود الأيسر: لوحة التحكم ========== -->
-    <aside>
-        <div class="panel">
-            <h3>📊 تقدم الدورة</h3>
-            <div id="stats-summary">
-                <p>اليوم الزراعي: <span id="day-counter">--</span></p>
-                <p>المرحلة الحالية: <span id="stage-name" class="status-pill">--</span></p>
-                <div class="progress-bar-wrap"><div id="main-progress"></div></div>
-                <p>المتبقي حتى الحصاد: <span id="days-left">--</span> يوم</p>
+    <!-- ========== الهيكل الرئيسي ========== -->
+    <div class="main-wrapper">
+        <!-- ========== الهيدر ========== -->
+        <header>
+            <div class="header-content">
+                <h1>🍄 Agaricus Expert v3.0</h1>
+                <small>النظام المتكامل للمستشار الذكي في زراعة الفطر الأبيض - بدعم الذكاء الاصطناعي المجاني</small>
+                <div id="api-status" class="api-status">
+                    جاهز للاستخدام - اختر مزود الذكاء الاصطناعي
+                </div>
             </div>
-        </div>
-
-        <div class="panel">
-            <h3>⚠️ مركز التنبيهات الذكي</h3>
-            <div id="alert-zone">
-                <div class="alert-box alert-info">يرجى تحديد تاريخ بدء المشروع لتفعيل النظام.</div>
-            </div>
-        </div>
-        
-        <!-- قسم المستشار الذكي -->
-        <div class="panel" id="ai-advisor-section">
-            <h3>🤖 المستشار الذكي (DeepSeek)</h3>
-            <div id="advisor-loading" style="display:none; text-align:center; padding:10px;">
-                <div class="loading-spinner"></div>
-                <p style="margin:5px 0; color:#3498db;">جاري تحليل اليوم الزراعي...</p>
-            </div>
-            <div id="advisor-content">
-                <p style="color:#7f8c8d; font-size:0.9rem;">
-                    انقر على أي يوم في التقويم للحصول على استشارة ذكية متخصصة تشمل تحليل المخاطر والظروف المثلى.
-                </p>
-            </div>
-            <div style="margin-top:15px; font-size:0.8rem; color:#666;">
-                <strong>⚡ يعمل بـ:</strong> DeepSeek AI - نموذج متقدم للزراعة الدقيقة
-            </div>
-        </div>
-
-        <div class="panel">
-            <h3>🌡️ الضوابط المثالية اليوم</h3>
-            <div id="env-targets" style="font-size: 0.9rem;">
-                <p>حرارة الهواء: <strong id="t-air">--</strong></p>
-                <p>حرارة الكومبوست: <strong id="t-comp">--</strong></p>
-                <p>الرطوبة (RH): <strong id="t-rh">--</strong></p>
-                <p>ثاني أكسيد الكربون: <strong id="t-co2">--</strong></p>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ========== القسم الرئيسي: التقويم والرسوم البيانية ========== -->
-    <main class="calendar-section">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>📅 التقويم العملياتي (75 يوماً)</h3>
-            <div id="current-month-label" style="font-weight:bold; color:var(--primary-dark);"></div>
-        </div>
-        <div class="calendar-grid" id="calendar-grid">
-            <!-- سيتم إنشاء التقويم ديناميكياً بواسطة JavaScript -->
-        </div>
-        <div class="chart-container">
-            <canvas id="mainChart"></canvas>
-        </div>
-    </main>
-
-    <!-- ========== العمود الأيمن: المهام والطوارئ ========== -->
-    <aside>
-        <div class="panel" id="daily-tasks-panel" style="min-height: 400px;">
-            <h3>📝 بروتوكول اليوم</h3>
-            <div id="tasks-content">
-                <p style="color:#7f8c8d;">انقر على أي يوم في التقويم لعرض المهام العلمية والتعليمات الدقيقة لهذا اليوم.</p>
-            </div>
-        </div>
-
-        <div class="panel">
-            <h3>🚑 دليل الطوارئ</h3>
-            <select id="troubleshooter" onchange="showSolution()" style="width:100%; padding:10px; border-radius:5px;">
-                <option value="">اختر مشكلة تواجهها...</option>
-                <option value="green_mold">بقع خضراء على الكومبوست</option>
-                <option value="high_ammonia">رائحة أمونيا قوية</option>
-                <option value="overlay">نمو ميسليوم كثيف (جلدي) على السطح</option>
-                <option value="dry_casing">جفاف طبقة التغطية</option>
-                <option value="small_mushrooms">الفطر صغير الحجم ويتفتح بسرعة</option>
-            </select>
-            <div id="solution-box" style="margin-top:10px; font-size:0.85rem; color:#c0392b;"></div>
-        </div>
-    </aside>
-
-    <!-- ========== قسم التعليمات ========== -->
-    <div class="edu-section">
-        <div class="panel bg-spawn">
-            <h4>1. مرحلة التحضين (Days 1-15)</h4>
-            <p style="font-size:0.8rem;">الهدف: غزو الميسليوم للكومبوست. يجب الحفاظ على حرارة الكومبوست (25°C) وعدم التهوية لرفع CO₂ الذي يسرع النمو الخضري.</p>
-        </div>
-        <div class="panel bg-casing">
-            <h4>2. مرحلة التغطية (Days 16-25)</h4>
-            <p style="font-size:0.8rem;">إضافة التربة. دورها حيوي كخزان ماء ومحفز بكتيري. يحظر استخدام مياه ملوثة. الـ pH المثالي 7.5.</p>
-        </div>
-        <div class="panel bg-pinning">
-            <h4>3. صدمة التزهير (Days 26-32)</h4>
-            <p style="font-size:0.8rem;">المرحلة الأخطر. نخفض الحرارة لـ 17°C والـ CO₂ لـ 800ppm. هذا يحول الميسليوم من نمو خيطي إلى ثمار.</p>
-        </div>
-    </div>
-</div>
-
-<script>
-// ============================================================================
-// 📦 تعريف المتغيرات العامة وإعدادات النظام
-// ============================================================================
-/*
-sk-5f2d78636521431385a5e47da817f69f
-*/
-/**
- * إعدادات الدورة الزراعية
- * @constant {number} TOTAL_DAYS - إجمالي أيام الدورة الزراعية
- */
-const TOTAL_DAYS = 75;
-
-/**
- * قاعدة البيانات الرئيسية للمشروع
- * @constant {Object} PROJECT_DATA - يحتوي على جميع البيانات الثابتة للنظام
- */
-const PROJECT_DATA = {
-    stages: [
-        { 
-            id: 'spawn', 
-            name: 'التحضين (Spawn Run)', 
-            start: 1, 
-            end: 15, 
-            class: 'bg-spawn', 
-            tAir: 24, 
-            tComp: 26, 
-            rh: 95, 
-            co2: 5000 
-        },
-        { 
-            id: 'casing', 
-            name: 'التغطية (Casing)', 
-            start: 16, 
-            end: 25, 
-            class: 'bg-casing', 
-            tAir: 23, 
-            tComp: 24, 
-            rh: 90, 
-            co2: 4000 
-        },
-        { 
-            id: 'induction', 
-            name: 'الصدمة (Induction)', 
-            start: 26, 
-            end: 32, 
-            class: 'bg-pinning', 
-            tAir: 17, 
-            tComp: 19, 
-            rh: 85, 
-            co2: 800 
-        },
-        { 
-            id: 'cropping', 
-            name: 'الإثمار (Cropping)', 
-            start: 33, 
-            end: 75, 
-            class: 'bg-cropping', 
-            tAir: 16, 
-            tComp: 18, 
-            rh: 88, 
-            co2: 1000 
-        }
-    ],
-    troubleshooting: {
-        green_mold: "عفن التريكوديرما. السبب: تلوث أو بسترة غير كافية. الحل: رش ملح الطعام على البقعة أو عزل الصينية فوراً.",
-        high_ammonia: "السبب: المرحلة الثانية من الكومبوست غير مكتملة. الحل: تهوية مكثفة وتأخير التلقيح حتى اختفاء الرائحة.",
-        overlay: "تغطية جلدية. السبب: رطوبة هواء عالية جداً مع نقص تهوية. الحل: 'خربشة' السطح بلطف (Ruffling) وزيادة التهوية.",
-        dry_casing: "الحل: رش رذاذ ناعم جداً (Misting) عدة مرات يومياً دون إغراق الكومبوست.",
-        small_mushrooms: "السبب: حرارة مرتفعة جداً أثناء الإثمار. الحل: خفض حرارة الهواء إلى 16 درجة مئوية فوراً."
-    }
-};
-
-/**
- * متغيرات النظام العامة
- * @type {Date|null} selectedStartDate - تاريخ بدء المشروع
- * @type {Chart|null} chartInstance - مثيل مخطط Chart.js
- * @type {string} DEEPSEEK_API_KEY - مفتاح API لـ DeepSeek
- * @type {string} DEEPSEEK_API_URL - رابط واجهة برمجة التطبيقات
- */
-let selectedStartDate = null;
-let chartInstance = null;
-let DEEPSEEK_API_KEY = localStorage.getItem('deepseek_api_key') || '';
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
-
-// ============================================================================
-// 🎯 الوظائف الرئيسية للتحكم بالمشروع
-// ============================================================================
-
-/**
- * تهيئة مشروع زراعي جديد
- * @function initializeProject
- * @description تقوم ببدء دورة زراعية جديدة بناءً على التاريخ المحدد
- * @throws {Alert} إذا لم يتم تحديد تاريخ البدء
- */
-function initializeProject() {
-    const dateInput = document.getElementById('startDate').value;
-    
-    if (!dateInput) { 
-        alert("⚠️ الرجاء تحديد تاريخ بدء المشروع أولاً!"); 
-        return; 
-    }
-    
-    selectedStartDate = new Date(dateInput);
-    localStorage.setItem('mushroom_start', dateInput);
-    
-    renderCalendar();
-    updateDashboard();
-    initChart();
-    setupAutoSave();
-    
-    console.log(`✅ تم بدء مشروع جديد بتاريخ: ${selectedStartDate.toLocaleDateString('ar-SA')}`);
-}
-
-/**
- * إنشاء وتصيير التقويم الزراعي
- * @function renderCalendar
- * @description تقوم بإنشاء شبكة التقويم المكونة من 75 يومًا مع معلومات كل يوم
- */
-function renderCalendar() {
-    const grid = document.getElementById('calendar-grid');
-    
-    if (!grid) {
-        console.error('❌ عنصر التقويم غير موجود في DOM');
-        return;
-    }
-    
-    grid.innerHTML = "";
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 1; i <= TOTAL_DAYS; i++) {
-        const currentDayDate = new Date(selectedStartDate);
-        currentDayDate.setDate(selectedStartDate.getDate() + (i - 1));
-        
-        const stage = getStageForDay(i);
-        const isToday = currentDayDate.getTime() === today.getTime();
-        const isCritical = [1, 16, 26, 33, 45, 60].includes(i);
-
-        const dayDiv = document.createElement('div');
-        dayDiv.className = `day-card ${stage.class} ${isToday ? 'active' : ''} ${isCritical ? 'critical-transition' : ''}`;
-        dayDiv.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
-                <strong>${i}</strong>
-                <span>${currentDayDate.getDate()}/${currentDayDate.getMonth()+1}</span>
-            </div>
-            <div style="margin-top:5px; font-size:0.6rem;">${stage.name.split(' ')[0]}</div>
-            <div style="position:absolute; bottom:5px; left:5px; font-size:0.6rem;">🌡️${stage.tAir}°</div>
-        `;
-        
-        // إرفاق حدث النقر على بطاقة اليوم
-        dayDiv.addEventListener('click', () => {
-            handleDayCardClick(i);
-        });
-        
-        grid.appendChild(dayDiv);
-    }
-    
-    updateMonthLabel();
-}
-
-/**
- * تحديث تسمية الشهر الحالي في التقويم
- * @function updateMonthLabel
- */
-function updateMonthLabel() {
-    if (!selectedStartDate) return;
-    
-    const monthLabel = document.getElementById('current-month-label');
-    const monthNames = [
-        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
-    
-    monthLabel.textContent = `${monthNames[selectedStartDate.getMonth()]} ${selectedStartDate.getFullYear()}`;
-}
-
-/**
- * معالجة النقر على بطاقة اليوم
- * @function handleDayCardClick
- * @param {number} dayNum - رقم اليوم الذي تم النقر عليه
- */
-function handleDayCardClick(dayNum) {
-    showDailyProtocol(dayNum);
-    consultDeepSeek(dayNum);
-    
-    // إزالة الفعالية من جميع البطاقات وإضافتها للبطاقة المحددة
-    document.querySelectorAll('.day-card').forEach(card => {
-        card.classList.remove('active');
-    });
-    
-    const clickedCard = document.querySelector(`.day-card strong:contains("${dayNum}")`)?.parentElement?.parentElement;
-    if (clickedCard) {
-        clickedCard.classList.add('active');
-    }
-}
-
-/**
- * الحصول على مرحلة محددة بناءً على رقم اليوم
- * @function getStageForDay
- * @param {number} day - رقم اليوم
- * @returns {Object} كائن المرحلة
- */
-function getStageForDay(day) {
-    return PROJECT_DATA.stages.find(s => day >= s.start && day <= s.end) || PROJECT_DATA.stages[0];
-}
-
-/**
- * عرض البروتوكول اليومي والمهام
- * @function showDailyProtocol
- * @param {number} dayNum - رقم اليوم
- */
-function showDailyProtocol(dayNum) {
-    const stage = getStageForDay(dayNum);
-    const taskContent = document.getElementById('tasks-content');
-    
-    if (!taskContent) {
-        console.error('❌ عنصر محتوى المهام غير موجود');
-        return;
-    }
-    
-    // تحديد المهام حسب المرحلة
-    let tasks = [];
-    if (dayNum <= 15) {
-        tasks = [
-            "قياس حرارة قلب الكومبوست (الهدف 26-27°C)",
-            "التأكد من عدم وجود تكثف ماء على السقف",
-            "منع دخول الذباب تماماً"
-        ];
-    } else if (dayNum <= 25) {
-        tasks = [
-            "فحص رطوبة طبقة التغطية (اختبار العصر باليد)",
-            "الحفاظ على مستويات CO2 عالية لمنع التزهير المبكر",
-            "الرش بالرذاذ الخفيف إذا لزم الأمر"
-        ];
-    } else if (dayNum <= 32) {
-        tasks = [
-            "إدخال هواء نقي (Fresh Air) بنسبة 100%",
-            "خفض درجة حرارة الماء المستخدم في الرش",
-            "مراقبة ظهور 'رؤوس الدبابيس'"
-        ];
-    } else {
-        tasks = [
-            "قطف الفطر الذي وصل قطره لـ 3-5 سم",
-            "الري بعد انتهاء 'الموجة' الأولى مباشرة",
-            "تنظيف الأرفف من بقايا الجذور"
-        ];
-    }
-
-    // بناء واجهة المهام
-    taskContent.innerHTML = `
-        <h4 style="color:var(--critical-red)">يوم ${dayNum}: ${stage.name}</h4>
-        <p><strong>الأهداف البيئية:</strong></p>
-        <ul style="font-size:0.85rem; background:#f9f9f9; padding:10px; border-radius:8px;">
-            <li>حرارة الهواء: ${stage.tAir}°C</li>
-            <li>حرارة الكومبوست: ${stage.tComp}°C</li>
-            <li>الرطوبة النسبية: ${stage.rh}%</li>
-            <li>CO₂: ${stage.co2} ppm</li>
-        </ul>
-        <p><strong>قائمة المهام:</strong></p>
-        <ul class="task-list">
-            ${tasks.map(t => `<li><input type="checkbox"> <span>${t}</span></li>`).join('')}
-        </ul>
-        <div style="margin-top:10px; font-size:0.8rem; border-top:1px solid #eee; padding-top:10px;">
-            <strong>📝 ملاحظة علمية:</strong> ${getScientificNote(dayNum)}
-        </div>
-    `;
-
-    // تحديث لوحة الضوابط البيئية
-    updateEnvironmentalControls(stage);
-}
-
-/**
- * تحديث لوحة الضوابط البيئية
- * @function updateEnvironmentalControls
- * @param {Object} stage - كائن المرحلة الحالية
- */
-function updateEnvironmentalControls(stage) {
-    const elements = {
-        't-air': stage.tAir + "°C",
-        't-comp': stage.tComp + "°C",
-        't-rh': stage.rh + "%",
-        't-co2': stage.co2 + " ppm"
-    };
-    
-    Object.entries(elements).forEach(([id, value]) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.innerText = value;
-        }
-    });
-}
-
-/**
- * الحصول على ملاحظة علمية لليوم
- * @function getScientificNote
- * @param {number} day - رقم اليوم
- * @returns {string} الملاحظة العلمية
- */
-function getScientificNote(day) {
-    if (day < 10) {
-        return "الميسليوم في حالة نشاط استقلابي عالٍ، يفرز حرارة ذاتية؛ راقب حرارة الكومبوست كي لا تتجاوز 30°C.";
-    } else if (day >= 26 && day <= 30) {
-        return "عملية التبريد السريع توقف النمو الخضري وتحفز الجينات المسؤولة عن التكاثر الجنسي (الإثمار).";
-    } else {
-        return "الفطر يضاعف حجمه كل 24 ساعة في هذه المرحلة؛ القطف المتأخر يقلل الجودة ويسودّ العينات.";
-    }
-}
-
-// ============================================================================
-// 📊 وظائف تحديث لوحة التحكم والرسوم البيانية
-// ============================================================================
-
-/**
- * تحديث لوحة التحكم الرئيسية
- * @function updateDashboard
- */
-function updateDashboard() {
-    if (!selectedStartDate) return;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const start = new Date(selectedStartDate);
-    start.setHours(0, 0, 0, 0);
-    
-    const diff = Math.ceil((today - start) / (1000 * 60 * 60 * 24)) + 1;
-    
-    if (diff >= 1 && diff <= TOTAL_DAYS) {
-        // تحديث مؤشرات التقدم
-        document.getElementById('day-counter').innerText = diff;
-        document.getElementById('days-left').innerText = TOTAL_DAYS - diff;
-        document.getElementById('main-progress').style.width = (diff / TOTAL_DAYS * 100) + "%";
-        
-        // تحديث المرحلة الحالية
-        const stage = getStageForDay(diff);
-        const stageElement = document.getElementById('stage-name');
-        stageElement.innerText = stage.name;
-        stageElement.style.backgroundColor = getStageColor(stage.class);
-        
-        // تحديث التنبيهات
-        updateAlerts(diff);
-        
-        // عرض بروتوكول اليوم
-        showDailyProtocol(diff);
-    }
-}
-
-/**
- * الحصول على لون الخلفية للمرحلة
- * @function getStageColor
- * @param {string} stageClass - فئة CSS للمرحلة
- * @returns {string} لون الخلفية
- */
-function getStageColor(stageClass) {
-    const colors = {
-        'bg-spawn': '#2ecc71',
-        'bg-casing': '#f39c12',
-        'bg-pinning': '#3498db',
-        'bg-cropping': '#9b59b6'
-    };
-    return colors[stageClass] || '#95a5a6';
-}
-
-/**
- * تحديث التنبيهات الذكية
- * @function updateAlerts
- * @param {number} currentDay - اليوم الحالي
- */
-function updateAlerts(currentDay) {
-    const alertZone = document.getElementById('alert-zone');
-    
-    if (!alertZone) return;
-    
-    // تنظيف التنبيهات السابقة
-    alertZone.innerHTML = '';
-    
-    // التحقق من الأيام الحرجة
-    if (currentDay === 15 || currentDay === 25 || currentDay === 32) {
-        const nextStage = getStageForDay(currentDay + 1);
-        alertZone.innerHTML = `
-            <div class="alert-box alert-critical">
-                🚀 تنبيه حرج: غداً تبدأ مرحلة ${nextStage.name}. 
-                جهز التجهيزات اللازمة وتحقق من الظروف البيئية المطلوبة!
-            </div>
-        `;
-    } else {
-        alertZone.innerHTML = `
-            <div class="alert-box alert-info">
-                ✅ النظام يعمل بشكل مستقر. 
-                تأكد من مطابقة قياسات الحساسات للمستهدفات المذكورة أعلاه.
-            </div>
-        `;
-    }
-}
-
-/**
- * تهيئة المخطط البياني
- * @function initChart
- */
-function initChart() {
-    const ctx = document.getElementById('mainChart')?.getContext('2d');
-    
-    if (!ctx) {
-        console.error('❌ عنصر المخطط البياني غير موجود');
-        return;
-    }
-    
-    // تدمير المخطط السابق إذا كان موجوداً
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-    
-    // إنشاء بيانات المخطط
-    const labels = Array.from({length: TOTAL_DAYS}, (_, i) => i + 1);
-    const temps = labels.map(d => getStageForDay(d).tAir);
-    const co2s = labels.map(d => getStageForDay(d).co2 / 100); // Scale down for visibility
-    
-    // إنشاء المخطط الجديد
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { 
-                    label: 'حرارة الهواء المثالية', 
-                    data: temps, 
-                    borderColor: '#e74c3c',
-                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                },
-                { 
-                    label: 'مستوى CO₂ (مقسوم على 100)', 
-                    data: co2s, 
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    tension: 0.3,
-                    fill: true
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { 
-                    position: 'bottom',
-                    labels: {
-                        font: {
-                            family: 'Cairo',
-                            size: 12
-                        }
-                    }
-                },
-                tooltip: {
-                    rtl: true,
-                    titleFont: {
-                        family: 'Cairo'
-                    },
-                    bodyFont: {
-                        family: 'Cairo'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'الأيام',
-                        font: {
-                            family: 'Cairo',
-                            size: 12
-                        }
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'القيم',
-                        font: {
-                            family: 'Cairo',
-                            size: 12
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-
-
-
-
-// ============================================================================
-// 🤖 نظام المستشار الذكي (DeepSeek AI)
-// ============================================================================
-
-
-// ============================================================================
-// 🤖 نظام المستشار الذكي (DeepSeek AI) - نسخة GitHub Pages
-// ============================================================================
-
-/**
- * استشارة DeepSeek AI لتحليل يوم زراعي محدد
- * @async
- * @function consultDeepSeek
- * @param {number} dayNumber - رقم اليوم الزراعي
- */
-async function consultDeepSeek(dayNumber) {
-    const stage = getStageForDay(dayNumber);
-    
-    // إظهار مؤشر التحميل
-    document.getElementById('advisor-loading').style.display = 'block';
-    document.getElementById('advisor-content').innerHTML = '';
-    
-    try {
-        // ⭐ التعديل: استخدام النموذج المحلي فقط على GitHub Pages
-        const isGitHubPages = window.location.hostname.includes('github.io');
-        const hasValidAPIKey = DEEPSEEK_API_KEY && DEEPSEEK_API_KEY !== '' && DEEPSEEK_API_KEY.startsWith('sk-');
-        
-        let aiResponse;
-        
-        if (hasValidAPIKey && !isGitHubPages) {
-            // استخدم API الحقيقي فقط عند التشغيل محلياً
-            aiResponse = await callDeepSeekAPI(dayNumber, stage);
-        } else {
-            // استخدم النموذج المحلي على GitHub Pages أو بدون مفتاح
-            await new Promise(resolve => setTimeout(resolve, 800)); // محاكاة التأخير
-            aiResponse = generateLocalAnalysis(dayNumber, stage);
             
-            // عرض ملاحظة على GitHub Pages
-            if (isGitHubPages) {
-                aiResponse = `
-                    <div class="alert-box alert-info" style="margin-bottom:15px;">
-                        <strong>💡 ملاحظة:</strong> التشغيل على GitHub Pages - يتم استخدام النموذج المحلي.<br>
-                        للحصول على تحليل متقدم بالذكاء الاصطناعي، شغل الملف <strong>محلياً على جهازك</strong>.
+            <div class="btn-group">
+                <input type="date" id="startDate" title="تاريخ بدء المشروع">
+                <button class="btn-start" onclick="initializeProject()">
+                    🚀 بدء دورة زراعية جديدة
+                </button>
+                <button class="btn-api" onclick="showAPISettings()">
+                    ⚙️ إدارة واجهات برمجة التطبيقات
+                </button>
+                <button class="btn-save" onclick="saveToDisk()">
+                    💾 تصدير البيانات
+                </button>
+            </div>
+        </header>
+
+        <!-- ========== لوحة التحكم الرئيسية ========== -->
+        <div class="dashboard">
+            <!-- ========== العمود الأيسر: التحكم والمراقبة ========== -->
+            <aside>
+                <!-- لوحة تقدم الدورة -->
+                <div class="panel">
+                    <h3>📊 تقدم الدورة الزراعية</h3>
+                    <div id="stats-summary">
+                        <p>اليوم الزراعي: <strong id="day-counter">--</strong></p>
+                        <p>المرحلة الحالية: <span id="stage-name" class="status-pill">--</span></p>
+                        
+                        <div class="progress-bar-wrap">
+                            <div id="main-progress"></div>
+                        </div>
+                        
+                        <p>المتبقي حتى الحصاد: <strong id="days-left">--</strong> يوم</p>
                     </div>
-                    ${aiResponse}
-                `;
-            }
-        }
-        
-        displayAIResponse(dayNumber, stage, aiResponse);
-    } catch (error) {
-        console.error('❌ خطأ في استشارة DeepSeek:', error);
-        displayErrorAnalysis(dayNumber, stage, error.message);
-    } finally {
-        // إخفاء مؤشر التحميل
-        document.getElementById('advisor-loading').style.display = 'none';
-    }
-}
+                </div>
 
-/**
- * استدعاء DeepSeek API مع معالجة CORS
- * @async
- * @function callDeepSeekAPI
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @returns {Promise<string>} استجابة API
- */
-async function callDeepSeekAPI(dayNumber, stage) {
-    const prompt = buildAIQuery(dayNumber, stage);
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    try {
-        // ⭐ إضافة proxy للتحايل على CORS (للتطوير فقط)
-        let apiUrl = DEEPSEEK_API_URL;
-        
-        // تحذير: لا تستخدم proxy في الإنتاج
-        if (isGitHubPages) {
-            throw new Error('DeepSeek API غير مدعوم مباشرة من GitHub Pages. شغل الملف محلياً.');
-        }
-        
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'أنت خبير زراعة فطر الأغاريكوس مع 20 عامًا من الخبرة. قدم إجابات عملية وعلمية ودقيقة.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: 1200,
-                temperature: 0.7
-            })
-        });
-        
-        if (!response.ok) {
-            // تحليل رسالة الخطأ
-            let errorMessage = `خطأ ${response.status}`;
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error?.message || errorMessage;
-            } catch (e) {
-                // تجاهل إذا لم يكن JSON
-            }
-            
-            throw new Error(`خطأ في API: ${response.status} - ${errorMessage}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!data.choices || !data.choices[0]) {
-            throw new Error('استجابة API غير صالحة');
-        }
-        
-        return data.choices[0].message.content;
-        
-    } catch (error) {
-        console.error('❌ فشل استدعاء API:', error);
-        throw error;
-    }
-}
+                <!-- مركز التنبيهات الذكي -->
+                <div class="panel">
+                    <h3>⚠️ مركز التنبيهات الذكي</h3>
+                    <div id="alert-zone">
+                        <div class="alert-box alert-info">
+                            ⏳ يرجى تحديد تاريخ بدء المشروع لتفعيل النظام.
+                        </div>
+                    </div>
+                </div>
 
-/**
- * عرض تحليل الخطأ مع حلول
- * @function displayErrorAnalysis
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @param {string} errorMessage - رسالة الخطأ
- */
-function displayErrorAnalysis(dayNumber, stage, errorMessage) {
-    const advisorContent = document.getElementById('advisor-content');
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    let solutions = '';
-    
-    if (isGitHubPages) {
-        solutions = `
-            <div class="ai-recommendation">
-                <p><strong>🔄 حل خاص بـ GitHub Pages:</strong></p>
-                <ul>
-                    <li>📥 <strong>حمل الملف على جهازك</strong> وافتحه مباشرة</li>
-                    <li>🚀 أو استخدم <a href="https://raw.githack.com/" target="_blank">raw.githack.com</a></li>
-                    <li>💻 أو شغل خادم محلي: <code>python -m http.server 8000</code></li>
-                </ul>
-            </div>
-        `;
-    } else if (errorMessage.includes('402')) {
-        solutions = `
-            <div class="ai-recommendation">
-                <p><strong>💰 حل مشكلة الدفع (402):</strong></p>
-                <ul>
-                    <li>تحقق من رصيد حساب DeepSeek الخاص بك</li>
-                    <li>تأكد من صحة مفتاح API</li>
-                    <li>استخدم النموذج المحلي مؤقتاً</li>
-                </ul>
-            </div>
-        `;
-    }
-    
-    advisorContent.innerHTML = `
-        <div class="advisor-response">
-            <h4 style="color: #e74c3c; margin-top: 0;">⚠️ تحليل اليوم ${dayNumber}</h4>
-            
-            <div style="margin-bottom: 10px; padding: 8px; background: #ffeaa7; border-radius: 5px;">
-                <strong>المرحلة:</strong> ${stage.name} | 
-                <strong>اليوم:</strong> ${dayNumber}/75
-            </div>
-            
-            <div class="alert-box alert-critical" style="margin-bottom: 15px;">
-                <strong>🚨 خطأ في الاتصال:</strong><br>
-                ${errorMessage}
-            </div>
-            
-            ${solutions}
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button onclick="consultDeepSeek(${dayNumber})" 
-                        style="background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">
-                    🔄 إعادة المحاولة
-                </button>
-                <button onclick="useLocalModel(${dayNumber})" 
-                        style="background: #2ecc71; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">
-                    🤖 استخدام النموذج المحلي
-                </button>
+                <!-- المستشار الذكي -->
+                <div class="panel" id="ai-advisor-section">
+                    <h3>🤖 المستشار الزراعي الذكي</h3>
+                    
+                    <div id="advisor-loading" style="display:none; text-align:center; padding:15px;">
+                        <div class="loading-spinner" style="margin:0 auto 10px;"></div>
+                        <p style="color:var(--info-blue); margin:0;">
+                            جاري تحليل اليوم الزراعي...
+                        </p>
+                        <small style="color:#7f8c8d;">
+                            يستخدم <span id="current-api-name">النموذج المحلي</span>
+                        </small>
+                    </div>
+                    
+                    <div id="advisor-content">
+                        <p style="color:#7f8c8d; font-size:0.9rem; text-align:center;">
+                            انقر على أي يوم في التقويم للحصول على تحليل ذكي متخصص
+                            يشمل المخاطر والتوصيات الدقيقة.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top:15px; font-size:0.8rem; color:#666; border-top:1px solid #eee; padding-top:10px;">
+                        <strong>⚡ المدعوم:</strong> 
+                        <span id="active-provider">النموذج المحلي (بدون إنترنت)</span>
+                    </div>
+                </div>
+
+                <!-- الضوابط البيئية المثالية -->
+                <div class="panel">
+                    <h3>🌡️ الضوابط البيئية اليوم</h3>
+                    <div id="env-targets" style="display:grid; gap:10px;">
+                        <div class="env-param">
+                            <span>حرارة الهواء:</span>
+                            <strong id="t-air">-- °C</strong>
+                        </div>
+                        <div class="env-param">
+                            <span>حرارة الكومبوست:</span>
+                            <strong id="t-comp">-- °C</strong>
+                        </div>
+                        <div class="env-param">
+                            <span>الرطوبة النسبية:</span>
+                            <strong id="t-rh">-- %</strong>
+                        </div>
+                        <div class="env-param">
+                            <span>ثاني أكسيد الكربون:</span>
+                            <strong id="t-co2">-- ppm</strong>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ========== القسم الرئيسي: التقويم والرسوم البيانية ========== -->
+            <main class="calendar-section">
+                <div class="calendar-header">
+                    <h3>📅 التقويم العملياتي (75 يوماً)</h3>
+                    <div id="current-month-label" style="font-weight:bold; color:var(--primary-dark);">
+                        اختر تاريخ البدء أولاً
+                    </div>
+                </div>
+                
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- سيتم إنشاء الأيام ديناميكياً -->
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </main>
+
+            <!-- ========== العمود الأيمن: المهام والطوارئ ========== -->
+            <aside>
+                <!-- بروتوكول اليوم -->
+                <div class="panel" id="daily-tasks-panel">
+                    <h3>📝 بروتوكول اليوم الزراعي</h3>
+                    <div id="tasks-content">
+                        <p style="color:#7f8c8d; text-align:center;">
+                            اختر يوماً من التقويم لعرض المهام العلمية والتعليمات الدقيقة
+                        </p>
+                    </div>
+                </div>
+
+                <!-- دليل الطوارئ -->
+                <div class="panel">
+                    <h3>🚑 دليل الطوارئ والاستكشاف</h3>
+                    
+                    <select id="troubleshooter" onchange="showSolution()" 
+                            style="margin-bottom:15px;"
+                            title="اختر مشكلة تواجهها">
+                        <option value="">اختر مشكلة تواجهها...</option>
+                        <option value="green_mold">🔴 بقع خضراء على الكومبوست (عفن)</option>
+                        <option value="high_ammonia">👃 رائحة أمونيا قوية</option>
+                        <option value="overlay">🛡️ نمو ميسليوم كثيف (جلدي) على السطح</option>
+                        <option value="dry_casing">🏜️ جفاف طبقة التغطية</option>
+                        <option value="small_mushrooms">🍄 فطر صغير الحجم يتفتح بسرعة</option>
+                    </select>
+                    
+                    <div id="solution-box"></div>
+                </div>
+            </aside>
+
+            <!-- ========== قسم التعليمات التفصيلية ========== -->
+            <div class="edu-section">
+                <div class="panel bg-spawn">
+                    <h4>🔬 1. مرحلة التحضين (Days 1-15)</h4>
+                    <p>الهدف: غزو الميسليوم للكومبوست بالكامل. حرارة الكومبوست 25°C مع رطوبة 95%. تجنب التهوية لرفع CO₂.</p>
+                    <ul style="font-size:0.8rem; margin-top:10px; padding-right:15px;">
+                        <li>نمو خيطي مكثف</li>
+                        <li>إنتاج حرارة ذاتية</li>
+                        <li>حساس للتلوث</li>
+                    </ul>
+                </div>
+                
+                <div class="panel bg-casing">
+                    <h4>🌱 2. مرحلة التغطية (Days 16-25)</h4>
+                    <p>إضافة تربة معقمة. دورها كخزان مائي ومحفز بكتيري. الرطوبة 90% ودرجة حموضة 7.5.</p>
+                    <ul style="font-size:0.8rem; margin-top:10px; padding-right:15px;">
+                        <li>تسلل الميسليوم للتربة</li>
+                        <li>تكوين علاقة تكافلية</li>
+                        <li>تحضير للتزهير</li>
+                    </ul>
+                </div>
+                
+                <div class="panel bg-pinning">
+                    <h4>⚡ 3. صدمة التزهير (Days 26-32)</h4>
+                    <p>المرحلة الأكثر حساسية. تخفيض الحرارة إلى 17°C وCO₂ إلى 800ppm لتحفيز تكوين الثمار.</p>
+                    <ul style="font-size:0.8rem; margin-top:10px; padding-right:15px;">
+                        <li>تحول فسيولوجي جذري</li>
+                        <li>تكوين براعم الأجسام الثمرية</li>
+                        <li>حساسية قصوى للظروف</li>
+                    </ul>
+                </div>
             </div>
         </div>
-    `;
-}
+    </div>
 
-/**
- * استخدام النموذج المحلي مباشرة
- * @function useLocalModel
- * @param {number} dayNumber - رقم اليوم
- */
-function useLocalModel(dayNumber) {
-    const stage = getStageForDay(dayNumber);
-    const analysis = generateLocalAnalysis(dayNumber, stage);
-    displayAIResponse(dayNumber, stage, analysis);
-}
+    <!-- ========== نافذة إدارة واجهات برمجة التطبيقات ========== -->
+    <div id="api-settings-modal" class="modal-overlay" style="display:none;"></div>
 
+    <script>
+        // ============================================================================
+        // 📦 تعريف المتغيرات العامة والنظام الأساسي
+        // ============================================================================
+        
+        /**
+         * إجمالي أيام الدورة الزراعية الكاملة
+         * @constant {number}
+         */
+        const TOTAL_DAYS = 75;
+        
+        /**
+         * قاعدة البيانات الرئيسية للمشروع الزراعي
+         * @constant {Object}
+         */
+        const PROJECT_DATA = {
+            stages: [
+                { 
+                    id: 'spawn', 
+                    name: 'التحضين (Spawn Run)', 
+                    start: 1, 
+                    end: 15, 
+                    class: 'bg-spawn', 
+                    tAir: 24, 
+                    tComp: 26, 
+                    rh: 95, 
+                    co2: 5000 
+                },
+                { 
+                    id: 'casing', 
+                    name: 'التغطية (Casing)', 
+                    start: 16, 
+                    end: 25, 
+                    class: 'bg-casing', 
+                    tAir: 23, 
+                    tComp: 24, 
+                    rh: 90, 
+                    co2: 4000 
+                },
+                { 
+                    id: 'induction', 
+                    name: 'صدمة التزهير (Induction)', 
+                    start: 26, 
+                    end: 32, 
+                    class: 'bg-pinning', 
+                    tAir: 17, 
+                    tComp: 19, 
+                    rh: 85, 
+                    co2: 800 
+                },
+                { 
+                    id: 'cropping', 
+                    name: 'الإثمار والحصاد (Cropping)', 
+                    start: 33, 
+                    end: 75, 
+                    class: 'bg-cropping', 
+                    tAir: 16, 
+                    tComp: 18, 
+                    rh: 88, 
+                    co2: 1000 
+                }
+            ],
+            
+            /**
+             * حلول المشاكل الشائعة في زراعة الفطر
+             * @constant {Object}
+             */
+            troubleshooting: {
+                green_mold: {
+                    problem: "عفن التريكوديرما (بقع خضراء)",
+                    cause: "تلوث الأبواغ أو بسترة غير كافية للكومبوست",
+                    solution: "رش ملح الطعام على البقعة مباشرة، عزل الصينية المصابة فوراً",
+                    prevention: "تعقيم كامل، تحكم دقيق بالرطوبة والحرارة"
+                },
+                high_ammonia: {
+                    problem: "رائحة أمونيا قوية",
+                    cause: "المرحلة الثانية من الكومبوست غير مكتملة، نشاط بكتيري زائد",
+                    solution: "تهوية مكثفة، تأخير التلقيح حتى اختفاء الرائحة تماماً",
+                    prevention: "تحضير كومبوست متوازن، مراقبة النشاط البكتيري"
+                },
+                overlay: {
+                    problem: "طبقة جلدية على السطح (Overlay)",
+                    cause: "رطوبة هواء عالية جداً مع نقص في التهوية",
+                    solution: "'خربشة' السطح بلطف (Ruffling) وزيادة التهوية الفعالة",
+                    prevention: "تحكم دقيق في RH، تهوية منتظمة"
+                },
+                dry_casing: {
+                    problem: "جفاف طبقة التغطية",
+                    cause: "نقص الري أو رطوبة منخفضة",
+                    solution: "رش رذاذ ناعم جداً عدة مرات يومياً دون إغراق الكومبوست",
+                    prevention: "مراقبة الرطوبة، بروتوكول ري منتظم"
+                },
+                small_mushrooms: {
+                    problem: "فطر صغير الحجم يتفتح بسرعة",
+                    cause: "حرارة مرتفعة جداً أثناء مرحلة الإثمار",
+                    solution: "خفض حرارة الهواء إلى 16 درجة مئوية فوراً، زيادة التهوية",
+                    prevention: "تحكم دقيق في الحرارة خلال الإثمار"
+                }
+            }
+        };
+        
+        /**
+         * أنواع واجهات برمجة التطبيقات المدعومة
+         * @enum {string}
+         */
+        const API_TYPES = {
+            GEMINI: 'gemini',
+            GROQ: 'groq',
+            OPENROUTER: 'openrouter',
+            DEEPSEEK: 'deepseek',
+            LOCAL: 'local'
+        };
+        
+        /**
+         * إعدادات جميع واجهات برمجة التطبيقات المدعومة
+         * @constant {Object}
+         */
+        const API_CONFIGS = {
+            gemini: {
+                name: 'Google Gemini',
+                url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+                free: true,
+                rateLimit: 60,
+                keyPattern: 'AIzaSy',
+                instructions: 'أنت خبير زراعة فطر الأغاريكوس مع خبرة 15 عاماً في الزراعة الدقيقة. قدم إجابات عملية وعلمية.',
+                website: 'https://aistudio.google.com/app/apikey',
+                icon: '🤖'
+            },
+            groq: {
+                name: 'Groq (Llama 3)',
+                url: 'https://api.groq.com/openai/v1/chat/completions',
+                free: true,
+                rateLimit: 30,
+                keyPattern: 'gsk_',
+                instructions: 'أنت مساعد زراعي متخصص في فطر الأغاريكوس مع معرفة دقيقة بالظروف المثلى.',
+                website: 'https://console.groq.com/keys',
+                icon: '⚡'
+            },
+            openrouter: {
+                name: 'OpenRouter',
+                url: 'https://openrouter.ai/api/v1/chat/completions',
+                free: true,
+                rateLimit: 100,
+                keyPattern: 'sk-or-',
+                instructions: 'أنت خبير زراعي تقدم نصائح عملية قابلة للتطبيق في زراعة الفطر.',
+                website: 'https://openrouter.ai/keys',
+                icon: '🌐'
+            },
+            deepseek: {
+                name: 'DeepSeek',
+                url: 'https://api.deepseek.com/chat/completions',
+                free: false,
+                rateLimit: null,
+                keyPattern: 'sk-',
+                instructions: 'أنت خبير زراعة فطر الأغاريكوس مع 20 عامًا من الخبرة العملية والعلمية.',
+                website: 'https://platform.deepseek.com/api_keys',
+                icon: '🔍'
+            },
+            local: {
+                name: 'النموذج المحلي',
+                url: null,
+                free: true,
+                rateLimit: null,
+                keyPattern: null,
+                instructions: 'نظام تحليل محلي بدون حاجة لإنترنت.',
+                website: null,
+                icon: '💻'
+            }
+        };
+        
+        /**
+         * متغيرات النظام العامة
+         * @type {Date|null} selectedStartDate - تاريخ بدء المشروع
+         * @type {Chart|null} chartInstance - مثيل مخطط Chart.js
+         * @type {string} ACTIVE_API_TYPE - نوع واجهة برمجة التطبيقات النشطة
+         * @type {string} ACTIVE_API_KEY - مفتاح واجهة برمجة التطبيقات النشطة
+         * @type {Object} API_CACHE - ذاكرة التخزين المؤقت لاستجابات واجهات برمجة التطبيقات
+         */
+        let selectedStartDate = null;
+        let chartInstance = null;
+        let ACTIVE_API_TYPE = localStorage.getItem('active_api_type') || 'gemini';
+        let ACTIVE_API_KEY = localStorage.getItem('active_api_key') || '';
+        let API_CACHE = JSON.parse(localStorage.getItem('api_cache') || '{}');
+        
+        // ============================================================================
+        // 🎯 الوظائف الأساسية للنظام
+        // ============================================================================
+        
+        /**
+         * تهيئة مشروع زراعي جديد
+         * @function initializeProject
+         * @description تقوم ببدء دورة زراعية جديدة بناءً على التاريخ المحدد من المستخدم
+         * @throws {Alert} إذا لم يتم تحديد تاريخ البدء
+         */
+        function initializeProject() {
+            const dateInput = document.getElementById('startDate');
+            
+            if (!dateInput || !dateInput.value) {
+                showAlert('⚠️ الرجاء تحديد تاريخ بدء المشروع أولاً!', 'warning');
+                return;
+            }
+            
+            try {
+                selectedStartDate = new Date(dateInput.value);
+                
+                // التحقق من صحة التاريخ
+                if (isNaN(selectedStartDate.getTime())) {
+                    throw new Error('تاريخ غير صالح');
+                }
+                
+                // حفظ التاريخ في التخزين المحلي
+                localStorage.setItem('mushroom_start', dateInput.value);
+                
+                // تنفيذ العمليات الأساسية
+                renderCalendar();
+                updateDashboard();
+                initChart();
+                setupAutoSave();
+                
+                showAlert('✅ تم بدء مشروع زراعي جديد بنجاح!', 'success');
+                logEvent('project_start', `بدء مشروع بتاريخ: ${dateInput.value}`);
+                
+            } catch (error) {
+                console.error('❌ خطأ في بدء المشروع:', error);
+                showAlert('❌ حدث خطأ في بدء المشروع. يرجى التحقق من التاريخ.', 'error');
+            }
+        }
+        
+        /**
+         * إنشاء وتصيير التقويم الزراعي
+         * @function renderCalendar
+         * @description تنشئ شبكة التقويم المكونة من 75 يومًا مع معلومات كل يوم
+         */
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            
+            if (!grid || !selectedStartDate) {
+                console.error('❌ عنصر التقويم غير موجود أو تاريخ غير محدد');
+                return;
+            }
+            
+            grid.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                const currentDayDate = new Date(selectedStartDate);
+                currentDayDate.setDate(selectedStartDate.getDate() + (i - 1));
+                
+                const stage = getStageForDay(i);
+                const isToday = currentDayDate.toDateString() === today.toDateString();
+                const isCritical = [1, 16, 26, 33, 45, 60].includes(i);
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = `day-card ${stage.class} ${isToday ? 'active' : ''} ${isCritical ? 'critical-transition' : ''}`;
+                dayDiv.dataset.day = i;
+                dayDiv.title = `اليوم ${i}: ${stage.name}`;
+                
+                dayDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <strong style="font-size:0.9rem;">${i}</strong>
+                        <small style="font-size:0.6rem; color:#666;">
+                            ${currentDayDate.getDate()}/${currentDayDate.getMonth() + 1}
+                        </small>
+                    </div>
+                    <div style="margin-top:4px; font-size:0.6rem; color:#555;">
+                        ${stage.name.split(' ')[0]}
+                    </div>
+                    <div style="position:absolute; bottom:4px; left:4px; font-size:0.6rem; color:#777;">
+                        🌡️${stage.tAir}°
+                    </div>
+                `;
+                
+                // إضافة حدث النقر
+                dayDiv.addEventListener('click', () => handleDayClick(i));
+                dayDiv.addEventListener('mouseenter', () => highlightDay(i));
+                dayDiv.addEventListener('mouseleave', () => unhighlightDay(i));
+                
+                grid.appendChild(dayDiv);
+            }
+            
+            updateMonthLabel();
+        }
+        
+        /**
+         * تحديث تسمية الشهر الحالي
+         * @function updateMonthLabel
+         */
+        function updateMonthLabel() {
+            if (!selectedStartDate) return;
+            
+            const monthLabel = document.getElementById('current-month-label');
+            const monthNames = [
+                'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+            ];
+            
+            monthLabel.textContent = `${monthNames[selectedStartDate.getMonth()]} ${selectedStartDate.getFullYear()}`;
+            monthLabel.style.color = 'var(--accent-green)';
+        }
+        
+        /**
+         * معالجة النقر على يوم في التقويم
+         * @function handleDayClick
+         * @param {number} dayNumber - رقم اليوم الذي تم النقر عليه
+         */
+        function handleDayClick(dayNumber) {
+            // تحديث الواجهة
+            updateDaySelection(dayNumber);
+            showDailyProtocol(dayNumber);
+            consultAI(dayNumber);
+            
+            // تسجيل الحدث
+            logEvent('day_selected', `تم اختيار اليوم: ${dayNumber}`);
+        }
+        
+        /**
+         * تحديث مظهر اليوم المحدد
+         * @function updateDaySelection
+         * @param {number} dayNumber - رقم اليوم المحدد
+         */
+        function updateDaySelection(dayNumber) {
+            const allDays = document.querySelectorAll('.day-card');
+            allDays.forEach(day => {
+                day.classList.remove('active');
+            });
+            
+            const selectedDay = document.querySelector(`.day-card[data-day="${dayNumber}"]`);
+            if (selectedDay) {
+                selectedDay.classList.add('active');
+            }
+        }
+        
+        /**
+         * إبراز اليوم عند المرور بالفأرة
+         * @function highlightDay
+         * @param {number} dayNumber - رقم اليوم
+         */
+        function highlightDay(dayNumber) {
+            const day = document.querySelector(`.day-card[data-day="${dayNumber}"]`);
+            if (day) {
+                day.style.transform = 'scale(1.05)';
+                day.style.zIndex = '10';
+            }
+        }
+        
+        /**
+         * إزالة الإبراز عند مغادرة الفأرة
+         * @function unhighlightDay
+         * @param {number} dayNumber - رقم اليوم
+         */
+        function unhighlightDay(dayNumber) {
+            const day = document.querySelector(`.day-card[data-day="${dayNumber}"]`);
+            if (day && !day.classList.contains('active')) {
+                day.style.transform = '';
+                day.style.zIndex = '';
+            }
+        }
+        
+        /**
+         * الحصول على مرحلة معينة بناءً على رقم اليوم
+         * @function getStageForDay
+         * @param {number} day - رقم اليوم
+         * @returns {Object} كائن المرحلة
+         */
+        function getStageForDay(day) {
+            if (day < 1 || day > TOTAL_DAYS) {
+                return PROJECT_DATA.stages[0];
+            }
+            
+            return PROJECT_DATA.stages.find(stage => day >= stage.start && day <= stage.end) || PROJECT_DATA.stages[0];
+        }
+        
+        // ============================================================================
+        // 📊 عرض البروتوكول اليومي
+        // ============================================================================
+        
+        /**
+         * عرض البروتوكول اليومي والمهام
+         * @function showDailyProtocol
+         * @param {number} dayNumber - رقم اليوم
+         */
+        function showDailyProtocol(dayNumber) {
+            const stage = getStageForDay(dayNumber);
+            const taskContent = document.getElementById('tasks-content');
+            
+            if (!taskContent) return;
+            
+            // تحديد المهام حسب المرحلة
+            const tasks = getTasksForDay(dayNumber, stage);
+            
+            // بناء واجهة المهام
+            taskContent.innerHTML = `
+                <div style="margin-bottom:15px;">
+                    <h4 style="color:var(--primary-dark); margin-bottom:5px;">
+                        📅 اليوم ${dayNumber}: ${stage.name}
+                    </h4>
+                    <small style="color:#7f8c8d;">
+                        المرحلة: ${stage.start}-${stage.end} | الإجمالي: ${TOTAL_DAYS} يوم
+                    </small>
+                </div>
+                
+                <div style="background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:15px;">
+                    <p style="margin-bottom:8px; font-weight:bold;">🎯 الأهداف البيئية:</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85rem;">
+                        <div>
+                            <span style="color:#666;">🌡️ حرارة الهواء:</span>
+                            <strong style="color:var(--primary-dark);">${stage.tAir}°C</strong>
+                        </div>
+                        <div>
+                            <span style="color:#666;">🔥 حرارة الكومبوست:</span>
+                            <strong style="color:var(--primary-dark);">${stage.tComp}°C</strong>
+                        </div>
+                        <div>
+                            <span style="color:#666;">💧 الرطوبة:</span>
+                            <strong style="color:var(--primary-dark);">${stage.rh}%</strong>
+                        </div>
+                        <div>
+                            <span style="color:#666;">🌬️ CO₂:</span>
+                            <strong style="color:var(--primary-dark);">${stage.co2} ppm</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="margin-bottom:8px; font-weight:bold;">📋 قائمة المهام:</p>
+                <ul class="task-list">
+                    ${tasks.map((task, index) => `
+                        <li>
+                            <input type="checkbox" id="task-${dayNumber}-${index}" 
+                                   onchange="updateTaskCompletion(${dayNumber}, ${index})">
+                            <label for="task-${dayNumber}-${index}" style="cursor:pointer;">
+                                ${task}
+                            </label>
+                        </li>
+                    `).join('')}
+                </ul>
+                
+                <div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee;">
+                    <p style="font-weight:bold; margin-bottom:5px;">🔬 ملاحظة علمية:</p>
+                    <p style="font-size:0.85rem; color:#666;">${getScientificNote(dayNumber)}</p>
+                </div>
+            `;
+            
+            // تحميل حالة المهام المحفوظة
+            loadTaskState(dayNumber);
+            
+            // تحديث الضوابط البيئية
+            updateEnvironmentalControls(stage);
+        }
+        
+        /**
+         * الحصول على المهام اليومية بناءً على المرحلة
+         * @function getTasksForDay
+         * @param {number} day - رقم اليوم
+         * @param {Object} stage - المرحلة الحالية
+         * @returns {Array<string>} قائمة المهام
+         */
+        function getTasksForDay(day, stage) {
+            switch(stage.id) {
+                case 'spawn':
+                    return [
+                        "قياس حرارة قلب الكومبوست (الهدف 26-27°C)",
+                        "التأكد من عدم وجود تكثف ماء على السقف",
+                        "منع دخول الذباب والحشرات تماماً",
+                        "مراقبة انتشار الميسليوم",
+                        "تجنب فتح الغرفة إلا للضرورة"
+                    ];
+                    
+                case 'casing':
+                    return [
+                        "فحص رطوبة طبقة التغطية (اختبار العصر باليد)",
+                        "الحفاظ على مستويات CO₂ عالية لمنع التزهير المبكر",
+                        "الرش بالرذاذ الخفيف إذا لزم الأمر",
+                        "مراقبة تسلل الميسليوم للطبقة العليا",
+                        "فحص درجة حموضة التربة"
+                    ];
+                    
+                case 'induction':
+                    return [
+                        "إدخال هواء نقي (Fresh Air) بنسبة 100%",
+                        "خفض درجة حرارة الماء المستخدم في الرش",
+                        "مراقبة ظهور 'رؤوس الدبابيس'",
+                        "الحفاظ على حرارة ثابتة (17°C)",
+                        "تقليل الري تدريجياً"
+                    ];
+                    
+                case 'cropping':
+                    return [
+                        "قطف الفطر الذي وصل قطره لـ 3-5 سم",
+                        "الري بعد انتهاء 'الموجة' الأولى مباشرة",
+                        "تنظيف الأرفف من بقايا الجذور",
+                        "ترتيب مواعيد القطف حسب الحجم",
+                        "تسجيل كميات الإنتاج اليومية"
+                    ];
+                    
+                default:
+                    return ["لا توجد مهام محددة لهذا اليوم"];
+            }
+        }
+        
+        /**
+         * تحديث الضوابط البيئية في الواجهة
+         * @function updateEnvironmentalControls
+         * @param {Object} stage - المرحلة الحالية
+         */
+        function updateEnvironmentalControls(stage) {
+            const elements = {
+                't-air': `${stage.tAir} °C`,
+                't-comp': `${stage.tComp} °C`,
+                't-rh': `${stage.rh} %`,
+                't-co2': `${stage.co2} ppm`
+            };
+            
+            Object.entries(elements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            });
+        }
+        
+        /**
+         * الحصول على ملاحظة علمية لليوم
+         * @function getScientificNote
+         * @param {number} day - رقم اليوم
+         * @returns {string} الملاحظة العلمية
+         */
+        function getScientificNote(day) {
+            if (day <= 10) {
+                return "الميسليوم في حالة نشاط استقلابي عالٍ، يفرز حرارة ذاتية تصل لـ 3°C فوق حرارة الغرفة.";
+            } else if (day <= 15) {
+                return "اكتمال الغزو الخيطي للكومبوست، البدء في تحضير طبقة التغطية.";
+            } else if (day >= 26 && day <= 30) {
+                return "عملية التبريد السريع توقف النمو الخضري وتحفز الجينات المسؤولة عن التكاثر الجنسي.";
+            } else if (day >= 33) {
+                return "الفطر يضاعف حجمه كل 24 ساعة، القطف المتأخر يقلل الجودة ويسودّ العينات.";
+            } else {
+                return "مرحلة انتقالية تحتاج لمراقبة دقيقة للتغيرات الفسيولوجية.";
+            }
+        }
+        
+        // ============================================================================
+        // 🤖 نظام الذكاء الاصطناعي المتعدد
+        // ============================================================================
+        
+        /**
+         * استشارة الذكاء الاصطناعي
+         * @async
+         * @function consultAI
+         * @param {number} dayNumber - رقم اليوم
+         */
+        async function consultAI(dayNumber) {
+            const stage = getStageForDay(dayNumber);
+            
+            // إظهار مؤشر التحميل
+            showLoadingIndicator(true);
+            
+            try {
+                let aiResponse;
+                const apiType = getActiveAPIType();
+                
+                // تحديث اسم مزود واجهة برمجة التطبيقات في الواجهة
+                document.getElementById('current-api-name').textContent = 
+                    API_CONFIGS[apiType]?.name || 'النموذج المحلي';
+                
+                if (apiType === API_TYPES.LOCAL || !ACTIVE_API_KEY) {
+                    // استخدام النموذج المحلي
+                    aiResponse = await getLocalAnalysis(dayNumber, stage);
+                    logEvent('ai_consult', `النموذج المحلي - اليوم ${dayNumber}`);
+                } else {
+                    // استخدام واجهة برمجة التطبيقات
+                    aiResponse = await callAIAPI(dayNumber, stage, apiType);
+                    logEvent('ai_consult', `${apiType} - اليوم ${dayNumber}`);
+                }
+                
+                displayAIResponse(dayNumber, stage, aiResponse, apiType);
+                
+            } catch (error) {
+                console.error('❌ خطأ في استشارة الذكاء الاصطناعي:', error);
+                
+                // المحاولة بالنموذج المحلي كنسخة احتياطية
+                try {
+                    const fallbackResponse = await getLocalAnalysis(dayNumber, stage);
+                    displayAIResponse(dayNumber, stage, fallbackResponse, API_TYPES.LOCAL);
+                    showAlert('⚠️ تم استخدام النموذج المحلي كنسخة احتياطية', 'warning');
+                    logEvent('ai_fallback', `نسخة احتياطية - اليوم ${dayNumber}`);
+                } catch (fallbackError) {
+                    displayErrorAnalysis(dayNumber, stage, error.message);
+                    logEvent('ai_error', `خطأ مزدوج - اليوم ${dayNumber}`);
+                }
+                
+            } finally {
+                showLoadingIndicator(false);
+            }
+        }
+        
+        /**
+         * استدعاء واجهة برمجة التطبيقات المحددة
+         * @async
+         * @function callAIAPI
+         * @param {number} dayNumber - رقم اليوم
+         * @param {Object} stage - المرحلة
+         * @param {string} apiType - نوع واجهة برمجة التطبيقات
+         * @returns {Promise<string>} الاستجابة
+         */
+        async function callAIAPI(dayNumber, stage, apiType) {
+            // التحقق من ذاكرة التخزين المؤقت
+            const cacheKey = `${apiType}_${dayNumber}`;
+            const cached = API_CACHE[cacheKey];
+            
+            if (cached && (Date.now() - new Date(cached.timestamp).getTime()) < 24 * 60 * 60 * 1000) {
+                console.log('💾 استخدام البيانات المخزنة مؤقتاً');
+                return cached.response;
+            }
+            
+            const prompt = buildAIQuery(dayNumber, stage);
+            const config = API_CONFIGS[apiType];
+            
+            if (!config || !ACTIVE_API_KEY) {
+                throw new Error(`إعدادات ${apiType} غير مكتملة`);
+            }
+            
+            let response;
+            
+            try {
+                switch (apiType) {
+                    case API_TYPES.GEMINI:
+                        response = await callGeminiAPI(prompt, config);
+                        break;
+                        
+                    case API_TYPES.GROQ:
+                        response = await callGroqAPI(prompt, config);
+                        break;
+                        
+                    case API_TYPES.OPENROUTER:
+                        response = await callOpenRouterAPI(prompt, config);
+                        break;
+                        
+                    case API_TYPES.DEEPSEEK:
+                        response = await callDeepSeekAPI(prompt, config);
+                        break;
+                        
+                    default:
+                        throw new Error(`نوع واجهة برمجة التطبيقات غير مدعوم: ${apiType}`);
+                }
+                
+                // تخزين في ذاكرة التخزين المؤقت
+                API_CACHE[cacheKey] = {
+                    response: response,
+                    timestamp: new Date().toISOString(),
+                    apiType: apiType,
+                    day: dayNumber
+                };
+                
+                localStorage.setItem('api_cache', JSON.stringify(API_CACHE));
+                
+                return response;
+                
+            } catch (apiError) {
+                console.error(`❌ فشل استدعاء ${apiType} API:`, apiError);
+                throw apiError;
+            }
+        }
+        
+        /**
+         * استدعاء Gemini API
+         * @async
+         * @function callGeminiAPI
+         */
+        async function callGeminiAPI(prompt, config) {
+            const response = await fetch(`${config.url}?key=${ACTIVE_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: `${config.instructions}\n\n${prompt}` }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 1500,
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Gemini API: ${response.status} - ${errorText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('استجابة Gemini غير صالحة');
+            }
+        }
+        
+        /**
+         * استدعاء Groq API
+         * @async
+         * @function callGroqAPI
+         */
+        async function callGroqAPI(prompt, config) {
+            const response = await fetch(config.url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${ACTIVE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'llama3-70b-8192',
+                    messages: [
+                        { role: 'system', content: config.instructions },
+                        { role: 'user', content: prompt }
+                    ],
+                    max_tokens: 1500,
+                    temperature: 0.7
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Groq API: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.choices?.[0]?.message?.content) {
+                return data.choices[0].message.content;
+            } else {
+                throw new Error('استجابة Groq غير صالحة');
+            }
+        }
+        
+        /**
+         * استدعاء OpenRouter API
+         * @async
+         * @function callOpenRouterAPI
+         */
+        async function callOpenRouterAPI(prompt, config) {
+            const response = await fetch(config.url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${ACTIVE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'Agaricus Expert'
+                },
+                body: JSON.stringify({
+                    model: 'meta-llama/llama-3-70b-instruct',
+                    messages: [
+                        { role: 'system', content: config.instructions },
+                        { role: 'user', content: prompt }
+                    ],
+                    max_tokens: 1500
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`OpenRouter: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.choices?.[0]?.message?.content) {
+                return data.choices[0].message.content;
+            } else {
+                throw new Error('استجابة OpenRouter غير صالحة');
+            }
+        }
+        
+        /**
+         * استدعاء DeepSeek API
+         * @async
+         * @function callDeepSeekAPI
+         */
+        async function callDeepSeekAPI(prompt, config) {
+            const response = await fetch(config.url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${ACTIVE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'deepseek-chat',
+                    messages: [
+                        { role: 'system', content: config.instructions },
+                        { role: 'user', content: prompt }
+                    ],
+                    max_tokens: 1500,
+                    temperature: 0.7
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`DeepSeek: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.choices?.[0]?.message?.content) {
+                return data.choices[0].message.content;
+            } else {
+                throw new Error('استجابة DeepSeek غير صالحة');
+            }
+        }
+        
+        /**
+         * توليد تحليل محلي
+         * @async
+         * @function getLocalAnalysis
+         */
+        async function getLocalAnalysis(dayNumber, stage) {
+            // محاكاة تأخير الشبكة
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const analyses = {
+                spawn: `
+                    <div class="advisor-section">
+                        <h5>🌱 الحالة الفسيولوجية (اليوم ${dayNumber})</h5>
+                        <p>نمو خيطي مكثف للميسليوم داخل الكومبوست مع نشاط أيضي عالٍ. 
+                           إنتاج حرارة ذاتية تصل إلى 2-3°C فوق حرارة الغرفة.</p>
+                    </div>
+                    
+                    <div class="advisor-section">
+                        <h5>⚠️ المخاطر الرئيسية:</h5>
+                        <ul>
+                            <li class="risk-high">ارتفاع حرارة الكومبوست فوق 30°C</li>
+                            <li class="risk-medium">جفاف الكومبوست بسبب نقص الرطوبة</li>
+                            <li class="risk-low">تلوث بكتيري أو فطري</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ai-recommendation">
+                        <h5>🎯 توصيات عملية:</h5>
+                        <ul>
+                            <li>📏 قياس حرارة القلب كل 6 ساعات</li>
+                            <li>💧 الحفاظ على الرطوبة فوق 90%</li>
+                            <li>🚫 تجنب التهوية خلال الأيام الأولى</li>
+                            <li>👁️ مراقبة ظهور أي بقع ملونة</li>
+                        </ul>
+                    </div>
+                `,
+                
+                casing: `
+                    <div class="advisor-section">
+                        <h5>🌱 الحالة الفسيولوجية (اليوم ${dayNumber})</h5>
+                        <p>تسلل الميسليوم إلى طبقة التغطية وتكوين علاقة تكافلية مع البكتيريا المحفزة.
+                           بدء تكوين الهياكل الأولية للأجسام الثمرية.</p>
+                    </div>
+                    
+                    <div class="advisor-section">
+                        <h5>⚠️ المخاطر الرئيسية:</h5>
+                        <ul>
+                            <li class="risk-high">تلوث التربة المستخدمة في التغطية</li>
+                            <li class="risk-medium">جفاف طبقة التغطية</li>
+                            <li class="risk-medium">تكوين طبقة جلدية (Overlay)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ai-recommendation">
+                        <h5>🎯 توصيات عملية:</h5>
+                        <ul>
+                            <li>🤲 اختبار رطوبة التربة بالضغط بين الأصابع</li>
+                            <li>💦 الرش الرذاذي الناعم مرتين يومياً</li>
+                            <li>👁️ مراقبة تسلل الميسليوم للطبقة العليا</li>
+                            <li>🌬️ الحفاظ على CO₂ أعلى من 4000 ppm</li>
+                        </ul>
+                    </div>
+                `,
+                
+                induction: `
+                    <div class="advisor-section">
+                        <h5>🌱 الحالة الفسيولوجية (اليوم ${dayNumber})</h5>
+                        <p>تحول فسيولوجي من النمو الخضري إلى التكاثر الجنسي تحت تأثير الصدمة الحرارية.
+                           بدء تكوين 'رؤوس الدبابيس' وتمايز الخلايا.</p>
+                    </div>
+                    
+                    <div class="advisor-section">
+                        <h5>⚠️ المخاطر الرئيسية:</h5>
+                        <ul>
+                            <li class="risk-high">فشل الصدمة الحرارية</li>
+                            <li class="risk-high">تذبذب درجات الحرارة</li>
+                            <li class="risk-medium">تكثف مائي على السطح</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ai-recommendation">
+                        <h5>🎯 توصيات عملية:</h5>
+                        <ul>
+                            <li>📉 خفض الحرارة تدريجياً (2-3°C/يوم)</li>
+                            <li>💨 زيادة التهوية إلى 100% هواء نقي</li>
+                            <li>🚿 خفض حرارة ماء الري إلى 16-18°C</li>
+                            <li>🔍 مراقبة ظهور العقد الثمرية الأولى</li>
+                        </ul>
+                    </div>
+                `,
+                
+                cropping: `
+                    <div class="advisor-section">
+                        <h5>🌱 الحالة الفسيولوجية (اليوم ${dayNumber})</h5>
+                        <p>تطور ونمو الأجسام الثمرية مع استطالة الساق وتكوين القبعة.
+                           تراكم المواد الغذائية والرطوبة في الأنسجة الفطرية.</p>
+                    </div>
+                    
+                    <div class="advisor-section">
+                        <h5>⚠️ المخاطر الرئيسية:</h5>
+                        <ul>
+                            <li class="risk-high">انتشار الأمراض في الموجة الأولى</li>
+                            <li class="risk-medium">فتح مبكر للقبعة</li>
+                            <li class="risk-low">تقزم الثمار</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="ai-recommendation">
+                        <h5>🎯 توصيات عملية:</h5>
+                        <ul>
+                            <li>✂️ القطف عند وصول القطر إلى 3-5 سم</li>
+                            <li>💧 الري بعد انتهاء كل موجة قطف</li>
+                            <li>🧹 تنظيف بقايا الجذور بعد كل قطف</li>
+                            <li>🌡️ الحفاظ على رطوبة 88% وتهوية مناسبة</li>
+                        </ul>
+                    </div>
+                `
+            };
+            
+            return analyses[stage.id] || analyses.spawn;
+        }
+        
+        /**
+         * بناء استعلام الذكاء الاصطناعي
+         * @function buildAIQuery
+         */
+        function buildAIQuery(dayNumber, stage) {
+            const currentDate = calculateDateFromDay(dayNumber);
+            
+            return `أنت خبير زراعة فطر الأغاريكوس (Agaricus bisporus) مع 20 عامًا من الخبرة.
 
-function displayLocalAnalysisOnly(dayNumber, stage) {
-    const analysis = generateLocalAnalysis(dayNumber, stage);
-    displayAIResponse(dayNumber, stage, analysis);
-}
-
-
-/**
- * بناء استعلام الذكاء الاصطناعي
- * @function buildAIQuery
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @returns {string} الاستعلام
- */
-function buildAIQuery(dayNumber, stage) {
-    const currentDate = calculateDateFromDay(dayNumber);
-    
-    return `أنت خبير زراعة فطر الأغاريكوس (Agaricus bisporus). 
-
-اليوم ${dayNumber} من دورة مدتها 75 يومًا.
+اليوم ${dayNumber} من دورة زراعية مدتها 75 يومًا.
 المرحلة الحالية: ${stage.name}
 تاريخ اليوم الزراعي: ${currentDate.toLocaleDateString('ar-SA')}
 
@@ -1190,675 +1743,1048 @@ function buildAIQuery(dayNumber, stage) {
    - المشاكل المتوقعة خلال الـ48 ساعة القادمة
    - إجراءات الطوارئ المحتملة
 
-يرجى تقديم الإجابة بشكل منظم وعملي مع التركيز على الجوانب التطبيقية. استخدم مصطلحات علمية دقيقة ولكن بلغة واضحة للمزارع.`;
-}
-
-/**
- * توليد تحليل محلي (بديل عند عدم توفر API)
- * @function generateLocalAnalysis
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @returns {string} التحليل المحلي
- */
-function generateLocalAnalysis(dayNumber, stage) {
-    const analyses = {
-        spawn: `
-            <div class="advisor-section">
-                <h5>🌱 الحالة الفسيولوجية:</h5>
-                <p>نمو خيطي مكثف للميسليوم داخل الكومبوست مع نشاط أيضي عالٍ وإنتاج حرارة ذاتية تصل إلى 2-3°C فوق حرارة الغرفة.</p>
-            </div>
-            
-            <div class="advisor-section">
-                <h5>⚠️ المخاطر الرئيسية:</h5>
-                <ul>
-                    <li class="risk-high">ارتفاع حرارة الكومبوست فوق 30°C يؤدي لموت الميسليوم</li>
-                    <li class="risk-medium">جفاف الكومبوست بسبب نقص الرطوبة النسبية</li>
-                    <li class="risk-low">تلوث بكتيري بسبب سوء البسترة</li>
-                </ul>
-            </div>
-            
-            <div class="advisor-section">
-                <h5>🎯 التوصيات العملية:</h5>
-                <div class="ai-recommendation">
-                    <ul>
-                        <li>مراقبة حرارة قلب الكومبوست كل 6 ساعات</li>
-                        <li>الحفاظ على الرطوبة النسبية فوق 90%</li>
-                        <li>تجنب التهوية خلال الأيام العشرة الأولى</li>
-                        <li>فحص ظهور أي بقع ملونة غير طبيعية</li>
-                    </ul>
-                </div>
-            </div>
-        `,
+يرجى تقديم الإجابة بشكل منظم وعملي مع التركيز على الجوانب التطبيقية.`;
+        }
         
-        casing: `
-            <div class="advisor-section">
-                <h5>🌱 الحالة الفسيولوجية:</h5>
-                <p>تسلل الميسليوم إلى طبقة التغطية وتكوين علاقة تكافلية مع البكتيريا المحفزة لبدء تكوين الهياكل الثمرية.</p>
-            </div>
+        /**
+         * عرض استجابة الذكاء الاصطناعي
+         * @function displayAIResponse
+         */
+        function displayAIResponse(dayNumber, stage, response, apiType = 'local') {
+            const advisorContent = document.getElementById('advisor-content');
+            const provider = API_CONFIGS[apiType] || API_CONFIGS.local;
             
-            <div class="advisor-section">
-                <h5>⚠️ المخاطر الرئيسية:</h5>
-                <ul>
-                    <li class="risk-high">تلوث التربة المستخدمة في التغطية</li>
-                    <li class="risk-medium">جفاف طبقة التغطية وعدم تسلل الميسليوم</li>
-                    <li class="risk-medium">تكوين طبقة جلدية على السطح (Overlay)</li>
-                </ul>
-            </div>
-            
-            <div class="advisor-section">
-                <h5>🎯 التوصيات العملية:</h5>
-                <div class="ai-recommendation">
-                    <ul>
-                        <li>اختبار رطوبة التربة بالضغط بين الأصابع</li>
-                        <li>الرش الرذاذي الناعم مرتين يوميًا</li>
-                        <li>مراقبة تسلل الميسليوم إلى الطبقة العليا</li>
-                        <li>الحفاظ على CO₂ أعلى من 4000 ppm</li>
-                    </ul>
+            advisorContent.innerHTML = `
+                <div class="advisor-response">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h4 style="color:var(--primary-dark); margin:0;">
+                            ${provider.icon} تحليل اليوم ${dayNumber}
+                        </h4>
+                        <span style="font-size:0.7rem; color:#7f8c8d; background:#f1f1f1; padding:2px 8px; border-radius:10px;">
+                            ${provider.name}
+                        </span>
+                    </div>
+                    
+                    <div style="margin-bottom:10px; padding:8px; background:#e8f8f5; border-radius:5px;">
+                        <strong>📊 المرحلة:</strong> ${stage.name} | 
+                        <strong>📅 اليوم:</strong> ${dayNumber}/75
+                    </div>
+                    
+                    ${response}
+                    
+                    <div style="margin-top:15px; font-size:0.8rem; color:#7f8c8d; border-top:1px solid #eee; padding-top:10px;">
+                        <strong>⏰ وقت التحليل:</strong> ${new Date().toLocaleTimeString('ar-SA')} |
+                        <strong>🔢 اليوم:</strong> ${dayNumber} |
+                        <strong>🤖 المصدر:</strong> ${provider.name}
+                    </div>
                 </div>
-            </div>
-        `,
+            `;
+            
+            // تحديث مزود واجهة برمجة التطبيقات النشط في الواجهة
+            document.getElementById('active-provider').textContent = provider.name;
+        }
         
-        induction: `
-            <div class="advisor-section">
-                <h5>🌱 الحالة الفسيولوجية:</h5>
-                <p>تحول فسيولوجي من النمو الخضري إلى التكاثر الجنسي تحت تأثير الصدمة الحرارية مع بدء تكوين 'رؤوس الدبابيس'.</p>
-            </div>
+        /**
+         * عرض تحليل الخطأ
+         * @function displayErrorAnalysis
+         */
+        function displayErrorAnalysis(dayNumber, stage, errorMessage) {
+            const advisorContent = document.getElementById('advisor-content');
+            const isGitHubPages = window.location.hostname.includes('github.io');
             
-            <div class="advisor-section">
-                <h5>⚠️ المخاطر الرئيسية:</h5>
-                <ul>
-                    <li class="risk-high">فشل الصدمة الحرارية وعدم تكوين الأجسام الثمرية</li>
-                    <li class="risk-high">تذبذب درجات الحرارة يؤخر التزهير</li>
-                    <li class="risk-medium">تكثف مائي على السطح يؤدي إلى تعفن</li>
-                </ul>
-            </div>
+            let solutions = '';
             
-            <div class="advisor-section">
-                <h5>🎯 التوصيات العملية:</h5>
-                <div class="ai-recommendation">
-                    <ul>
-                        <li>خفض درجة الحرارة تدريجيًا بمعدل 2-3°C يوميًا</li>
-                        <li>زيادة التهوية إلى 100% هواء نقي</li>
-                        <li>خفض حرارة ماء الري إلى 16-18°C</li>
-                        <li>مراقبة ظهور العقد الثمرية الأولى</li>
-                    </ul>
-                </div>
-            </div>
-        `,
-        
-        cropping: `
-            <div class="advisor-section">
-                <h5>🌱 الحالة الفسيولوجية:</h5>
-                <p>تطور ونمو الأجسام الثمرية مع استطالة الساق وتكوين القبعة وتراكم المواد الغذائية في الأنسجة الفطرية.</p>
-            </div>
-            
-            <div class="advisor-section">
-                <h5>⚠️ المخاطر الرئيسية:</h5>
-                <ul>
-                    <li class="risk-high">انتشار الأمراض الفطرية في الموجة الأولى</li>
-                    <li class="risk-medium">فتح مبكر للقبعة بسبب حرارة عالية</li>
-                    <li class="risk-low">تقزم الثمار بسبب نقص التهوية</li>
-                </ul>
-            </div>
-            
-            <div class="advisor-section">
-                <h5>🎯 التوصيات العملية:</h5>
-                <div class="ai-recommendation">
-                    <ul>
-                        <li>القطف عند وصول القطر إلى 3-5 سم</li>
-                        <li>الري بعد انتهاء كل موجة قطف</li>
-                        <li>تنظيف بقايا الجذور بعد كل قطف</li>
-                        <li>الحفاظ على رطوبة 88% وتهوية مناسبة</li>
-                    </ul>
-                </div>
-            </div>
-        `
-    };
-    
-    return analyses[stage.id] || analyses.spawn;
-}
-
-/**
- * عرض استجابة الذكاء الاصطناعي
- * @function displayAIResponse
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @param {string} response - استجابة AI
- */
-function displayAIResponse(dayNumber, stage, response) {
-    const advisorContent = document.getElementById('advisor-content');
-    const source = DEEPSEEK_API_KEY ? 'DeepSeek AI' : 'النموذج المحلي';
-    
-    advisorContent.innerHTML = `
-        <div class="advisor-response">
-            <h4 style="color: #3498db; margin-top: 0;">
-                🤖 تحليل اليوم ${dayNumber} 
-                <span style="font-size:0.7rem; color:#7f8c8d;">(${source})</span>
-            </h4>
-            
-            <div style="margin-bottom: 10px; padding: 8px; background: #e8f8f5; border-radius: 5px;">
-                <strong>المرحلة:</strong> ${stage.name} | 
-                <strong>اليوم:</strong> ${dayNumber}/75
-            </div>
-            
-            ${response}
-            
-            <div style="margin-top: 15px; font-size: 0.8rem; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px;">
-                <strong>⏰ وقت التحليل:</strong> ${new Date().toLocaleTimeString('ar-SA')} |
-                <strong>🔢 رقم اليوم:</strong> ${dayNumber}
-            </div>
-        </div>
-    `;
-    
-    // حفظ الاستجابة مؤقتاً
-    saveAICache(dayNumber, response);
-}
-
-
-/**
- * حفظ الاستجابة في ذاكرة التخزين المؤقت
- * @function saveAICache
- * @param {number} dayNumber - رقم اليوم
- * @param {string} response - الاستجابة
- */
-function saveAICache(dayNumber, response) {
-    try {
-        const cache = JSON.parse(localStorage.getItem('ai_cache') || '{}');
-        cache[dayNumber] = {
-            response: response,
-            timestamp: new Date().toISOString(),
-            stage: getStageForDay(dayNumber).id
-        };
-        localStorage.setItem('ai_cache', JSON.stringify(cache));
-    } catch (error) {
-        console.warn('⚠️ تعذر حفظ ذاكرة التخزين المؤقت:', error);
-    }
-}
-
-// ============================================================================
-// ⚙️ وظائف إدارة النظام والإعدادات
-// ============================================================================
-
-/**
- * إعداد الحفظ التلقائي
- * @function setupAutoSave
- */
-function setupAutoSave() {
-    // الحفظ التلقائي كل 30 ثانية
-    setInterval(() => {
-        try {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            const taskState = Array.from(checkboxes).map(cb => cb.checked);
-            localStorage.setItem('mushroom_tasks_state', JSON.stringify(taskState));
-            
-            // حفظ تاريخ البدء أيضاً
-            if (selectedStartDate) {
-                localStorage.setItem('mushroom_start', selectedStartDate.toISOString().split('T')[0]);
+            if (isGitHubPages) {
+                solutions = `
+                    <div class="ai-recommendation">
+                        <h5>🔄 حل خاص بـ GitHub Pages:</h5>
+                        <ul>
+                            <li>📥 <strong>حمل الملف على جهازك</strong> وافتحه مباشرة</li>
+                            <li>🚀 أو استخدم <a href="https://raw.githack.com/" target="_blank" style="color:var(--accent-green);">raw.githack.com</a></li>
+                            <li>💻 أو شغل خادم محلي: <code>python -m http.server 8000</code></li>
+                        </ul>
+                    </div>
+                `;
             }
             
-            console.log('💾 تم الحفظ التلقائي للبيانات');
-        } catch (error) {
-            console.error('❌ خطأ في الحفظ التلقائي:', error);
-        }
-    }, 30000);
-}
-
-/**
- * عرض حل مشكلة من دليل الطوارئ
- * @function showSolution
- */
-function showSolution() {
-    const selector = document.getElementById('troubleshooter');
-    const solutionBox = document.getElementById('solution-box');
-    
-    if (!selector || !solutionBox) return;
-    
-    const problem = selector.value;
-    const solution = PROJECT_DATA.troubleshooting[problem];
-    
-    if (solution) {
-        solutionBox.innerHTML = `
-            <div style="background: #fff5f5; padding: 10px; border-radius: 5px; border-right: 3px solid var(--critical-red);">
-                <strong style="color: #c0392b;">🔧 الحل المقترح:</strong><br>
-                ${solution}
-            </div>
-        `;
-    } else {
-        solutionBox.innerHTML = '';
-    }
-}
-
-/**
- * تصدير البيانات إلى ملف JSON
- * @function saveToDisk
- */
-function saveToDisk() {
-    if (!selectedStartDate) {
-        alert('⚠️ الرجاء بدء مشروع أولاً قبل التصدير');
-        return;
-    }
-    
-    const data = {
-        project: {
-            startDate: selectedStartDate.toISOString(),
-            exportDate: new Date().toISOString(),
-            version: "Agaricus Expert v2.1",
-            totalDays: TOTAL_DAYS
-        },
-        stages: PROJECT_DATA.stages,
-        currentDay: calculateCurrentDay(),
-        settings: {
-            deepSeekAPI: DEEPSEEK_API_KEY ? 'مفعل' : 'غير مفعل',
-            autoSave: true
-        },
-        metadata: {
-            generatedBy: 'Agaricus Expert System',
-            exportFormat: 'JSON v1.0'
-        }
-    };
-    
-    try {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { 
-            type: "application/json;charset=utf-8" 
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `مشروع_فطر_${new Date().toISOString().slice(0,10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        console.log('✅ تم تصدير البيانات بنجاح');
-    } catch (error) {
-        console.error('❌ خطأ في تصدير البيانات:', error);
-        alert('❌ حدث خطأ أثناء تصدير البيانات');
-    }
-}
-
-/**
- * حساب اليوم الحالي من تاريخ البدء
- * @function calculateCurrentDay
- * @returns {number} رقم اليوم الحالي
- */
-function calculateCurrentDay() {
-    if (!selectedStartDate) return 0;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const start = new Date(selectedStartDate);
-    start.setHours(0, 0, 0, 0);
-    
-    return Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
-}
-
-/**
- * حساب التاريخ من رقم اليوم
- * @function calculateDateFromDay
- * @param {number} dayNumber - رقم اليوم
- * @returns {Date} التاريخ المحسوب
- */
-function calculateDateFromDay(dayNumber) {
-    if (!selectedStartDate) return new Date();
-    
-    const date = new Date(selectedStartDate);
-    date.setDate(selectedStartDate.getDate() + (dayNumber - 1));
-    return date;
-}
-
-// ============================================================================
-// 🔐 إدارة إعدادات API
-// ============================================================================
-
-/**
- * عرض نافذة إعدادات API
- * @function showAPISettings
- */
-function showAPISettings() {
-    // إنشاء عنصر المودال
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'modal-overlay';
-    modalOverlay.id = 'api-settings-modal';
-    const isGitHubPages = window.location.hostname.includes('github.io');
-
-    
-    modalOverlay.innerHTML = `
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--primary-dark);">🔑 إعدادات DeepSeek API</h3>
-            
-            <p style="font-size:0.9rem; color:#666; margin-bottom:20px;">
-                للحصول على تحليل ذكي دقيق، أدخل مفتاح API الخاص بك من 
-                <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:#3498db;">
-                    منصة DeepSeek
-                </a>
-            </p>
-            
-            <div style="margin-bottom:15px;">
-                <label style="display:block; margin-bottom:5px; font-weight:bold;">مفتاح API:</label>
-                <input type="password" id="api-key-input" 
-                       value="${DEEPSEEK_API_KEY ? '••••••••••••••••' : ''}"
-                       placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx" 
-                       style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px; font-family: monospace;">
-                
-                <div style="margin-top:5px; font-size:0.8rem; color:#7f8c8d;">
-                    <input type="checkbox" id="show-api-key" onchange="toggleAPIVisibility()">
-                    <label for="show-api-key">إظهار المفتاح</label>
+            advisorContent.innerHTML = `
+                <div class="advisor-response">
+                    <h4 style="color:var(--critical-red); margin-top:0;">⚠️ تحليل اليوم ${dayNumber}</h4>
+                    
+                    <div style="margin-bottom:10px; padding:8px; background:#ffeaa7; border-radius:5px;">
+                        <strong>المرحلة:</strong> ${stage.name} | 
+                        <strong>اليوم:</strong> ${dayNumber}/75
+                    </div>
+                    
+                    <div class="alert-box alert-critical" style="margin-bottom:15px;">
+                        <strong>🚨 خطأ في الاتصال:</strong><br>
+                        ${errorMessage}
+                    </div>
+                    
+                    ${solutions}
+                    
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <button onclick="consultAI(${dayNumber})" class="btn" style="background:var(--info-blue);">
+                            🔄 إعادة المحاولة
+                        </button>
+                        <button onclick="useLocalModel(${dayNumber})" class="btn" style="background:var(--accent-green);">
+                            🤖 استخدام النموذج المحلي
+                        </button>
+                    </div>
                 </div>
-            </div>
-            
-            <div style="background:#f8f9fa; padding:10px; border-radius:5px; margin-bottom:15px;">
-                <strong style="color:#666;">💡 معلومات:</strong>
-                <ul style="margin:5px 0; padding-right:15px; font-size:0.8rem;">
-                    <li>المفتاح مخزن محلياً في متصفحك فقط</li>
-                    <li>لن يتم مشاركة المفتاح مع أي طرف ثالث</li>
-                    <li>يمكنك مسح المفتاح في أي وقت</li>
-                </ul>
-            </div>
-            
-            <div class="modal-actions">
-                <button onclick="saveAPIKey()" 
-                        style="background:#2ecc71; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
-                    💾 حفظ المفتاح
-                </button>
-                <button onclick="clearAPIKey()" 
-                        style="background:#e74c3c; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
-                    🗑️ مسح المفتاح
-                </button>
-                <button onclick="closeModal()" 
-                        style="background:#95a5a6; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer;">
-                    إغلاق
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modalOverlay);
-    
-    // منع إغلاق المودال عند النقر خارج المحتوى
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
-	 
-	 if (isGitHubPages) {
-        modalContent.innerHTML += `
-            <div class="alert-box alert-critical" style="margin-top: 15px;">
-                <strong>⚠️ تحذير:</strong> DeepSeek API <strong>لا يعمل</strong> على GitHub Pages بسبب قيود CORS.<br>
-                للحصول على ميزات الذكاء الاصطناعي الكاملة، شغل الملف <strong>محلياً على جهازك</strong>.
-            </div>
-        `;
-    }
-}
-
-/**
- * تبديل إظهار/إخفاء مفتاح API
- * @function toggleAPIVisibility
- */
-function toggleAPIVisibility() {
-    const input = document.getElementById('api-key-input');
-    const checkbox = document.getElementById('show-api-key');
-    
-    if (input && checkbox) {
-        input.type = checkbox.checked ? 'text' : 'password';
-    }
-}
-
-/**
- * حفظ مفتاح API
- * @function saveAPIKey
- */
-function saveAPIKey() {
-    const input = document.getElementById('api-key-input');
-    
-    if (!input) {
-        alert('❌ عنصر إدخال API غير موجود');
-        return;
-    }
-    
-    const apiKey = input.value.trim();
-    
-    if (apiKey && apiKey !== '••••••••••••••••') {
-        // التحقق من صحة تنسيق المفتاح
-        if (!apiKey.startsWith('sk-')) {
-            if (!confirm('⚠️ المفتاح لا يبدو بتنسيق قياسي. هل تريد الاستمرار في الحفظ؟')) {
-                return;
-            }
+            `;
         }
         
-        try {
-            localStorage.setItem('deepseek_api_key', apiKey);
-            DEEPSEEK_API_KEY = apiKey;
-            
-            alert('✅ تم حفظ مفتاح API بنجاح!');
-            console.log('🔑 تم تحديث مفتاح API');
-            
-            // تحديث واجهة المستخدم
-            updateAPIStatus();
-            
-        } catch (error) {
-            console.error('❌ خطأ في حفظ مفتاح API:', error);
-            alert('❌ تعذر حفظ مفتاح API: ' + error.message);
-        }
-    } else if (apiKey === '••••••••••••••••') {
-        alert('⚠️ المفتاح محفوظ مسبقاً. لم يتم إجراء تغييرات.');
-    } else {
-        alert('⚠️ الرجاء إدخال مفتاح API صالح');
-    }
-    
-    closeModal();
-}
-
-/**
- * مسح مفتاح API
- * @function clearAPIKey
- */
-function clearAPIKey() {
-    if (confirm('⚠️ هل أنت متأكد من مسح مفتاح API؟ سيتم تعطيل الميزات المتقدمة.')) {
-        try {
-            localStorage.removeItem('deepseek_api_key');
-            DEEPSEEK_API_KEY = '';
-            
-            alert('✅ تم مسح مفتاح API بنجاح');
-            console.log('🗑️ تم مسح مفتاح API');
-            
-            // تحديث واجهة المستخدم
-            updateAPIStatus();
-            
-        } catch (error) {
-            console.error('❌ خطأ في مسح مفتاح API:', error);
-            alert('❌ تعذر مسح مفتاح API: ' + error.message);
+        /**
+         * استخدام النموذج المحلي مباشرة
+         * @function useLocalModel
+         */
+        async function useLocalModel(dayNumber) {
+            const stage = getStageForDay(dayNumber);
+            const analysis = await getLocalAnalysis(dayNumber, stage);
+            displayAIResponse(dayNumber, stage, analysis, API_TYPES.LOCAL);
+            showAlert('✅ تم التبديل للنموذج المحلي', 'success');
         }
         
-        closeModal();
-    }
-}
-
-/**
- * تحديث حالة API في واجهة المستخدم
- * @function updateAPIStatus
- */
-function updateAPIStatus() {
-    const apiStatus = DEEPSEEK_API_KEY ? 'مفعل' : 'غير مفعل';
-    console.log(`📊 حالة API: ${apiStatus}`);
-    
-    // يمكنك إضافة مؤشر حالة في واجهة المستخدم هنا إذا لزم الأمر
-}
-
-/**
- * إغلاق نافذة المودال
- * @function closeModal
- */
-function closeModal() {
-    const modal = document.getElementById('api-settings-modal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// ============================================================================
-// 🚀 تهيئة النظام عند التحميل
-// ============================================================================
-
-/**
- * تهيئة النظام عند تحميل الصفحة
- * @event window.onload
- */
-window.onload = function() {
-    console.log('🚀 بدء تهيئة نظام Agaricus Expert v2.1...');
-    
-    // محاولة تحميل تاريخ البدء المحفوظ
-    try {
-        const savedStart = localStorage.getItem('mushroom_start');
-        if (savedStart) {
-            document.getElementById('startDate').value = savedStart;
-            initializeProject();
-            console.log('✅ تم تحميل المشروع المحفوظ');
-        } else {
-            console.log('ℹ️ لا يوجد مشروع محفوظ، جاهز لبدء مشروع جديد');
-        }
-    } catch (error) {
-        console.error('❌ خطأ في تحميل البيانات المحفوظة:', error);
-    }
-    
-    // تحميل حالة المهام المحفوظة
-    try {
-        const savedTasks = localStorage.getItem('mushroom_tasks_state');
-        if (savedTasks) {
-            const taskState = JSON.parse(savedTasks);
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox, index) => {
-                if (taskState[index] !== undefined) {
-                    checkbox.checked = taskState[index];
+        // ============================================================================
+        // ⚙️ إدارة واجهات برمجة التطبيقات
+        // ============================================================================
+        
+        /**
+         * عرض إعدادات واجهات برمجة التطبيقات
+         * @function showAPISettings
+         */
+        function showAPISettings() {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'modal-overlay';
+            modalOverlay.id = 'api-settings-modal';
+            
+            const currentAPI = API_CONFIGS[ACTIVE_API_TYPE] || API_CONFIGS.gemini;
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            
+            modalOverlay.innerHTML = `
+                <div class="modal-content">
+                    <h3 style="margin-top:0; color:var(--primary-dark);">
+                        ⚙️ إدارة واجهات برمجة التطبيقات الذكية
+                    </h3>
+                    
+                    ${isGitHubPages ? `
+                        <div class="alert-box alert-warning" style="margin-bottom:15px;">
+                            <strong>⚠️ ملاحظة:</strong> بعض واجهات برمجة التطبيقات قد لا تعمل على GitHub Pages بسبب قيود CORS.
+                            للحصول على أفضل تجربة، شغل الملف <strong>محلياً على جهازك</strong>.
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; margin-bottom:8px; font-weight:bold;">
+                            اختر مزود الذكاء الاصطناعي:
+                        </label>
+                        <select id="api-type-select" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ddd;">
+                            ${Object.entries(API_CONFIGS).map(([key, config]) => `
+                                <option value="${key}" ${key === ACTIVE_API_TYPE ? 'selected' : ''}>
+                                    ${config.icon || '🤖'} ${config.name} ${config.free ? '🆓' : '💰'}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div id="api-key-section" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:bold;">
+                            مفتاح API:
+                        </label>
+                        <input type="password" id="api-key-input" 
+                               value="${ACTIVE_API_KEY ? '••••••••••••••••' : ''}"
+                               placeholder="أدخل مفتاح API..." 
+                               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;">
+                        
+                        <div style="margin-top:5px; font-size:0.8rem; color:#7f8c8d;">
+                            <input type="checkbox" id="show-api-key" onchange="toggleAPIVisibility()">
+                            <label for="show-api-key" style="cursor:pointer;">👁️ إظهار المفتاح</label>
+                        </div>
+                    </div>
+                    
+                    <div id="api-info" style="background:#f8f9fa; padding:15px; border-radius:5px; margin-bottom:20px;">
+                        <h4 style="margin-top:0; color:#3498db;">ℹ️ معلومات ${currentAPI.name}</h4>
+                        <!-- سيتم تحديث المحتوى ديناميكياً -->
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button onclick="saveAPISettings()" class="btn" style="background:var(--accent-green);">
+                            💾 حفظ الإعدادات
+                        </button>
+                        <button onclick="testAPIConnection()" class="btn" style="background:var(--info-blue);">
+                            🔍 اختبار الاتصال
+                        </button>
+                        <button onclick="clearAPISettings()" class="btn" style="background:var(--critical-red);">
+                            🗑️ مسح الكل
+                        </button>
+                        <button onclick="closeModal()" class="btn-secondary">
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalOverlay);
+            modalOverlay.style.display = 'flex';
+            
+            // إضافة مستمعي الأحداث
+            document.getElementById('api-type-select').addEventListener('change', function() {
+                updateAPIInfo(this.value);
+            });
+            
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeModal();
                 }
             });
-            console.log('✅ تم تحميل حالة المهام المحفوظة');
-        }
-    } catch (error) {
-        console.warn('⚠️ تعذر تحميل حالة المهام:', error);
-    }
-    
-    // تحميل مفتاح API المحفوظ
-    try {
-        const savedAPIKey = localStorage.getItem('deepseek_api_key');
-        if (savedAPIKey) {
-            DEEPSEEK_API_KEY = savedAPIKey;
-            console.log('🔑 تم تحميل مفتاح API المحفوظ');
-        } else {
-            console.log('ℹ️ لا يوجد مفتاح API محفوظ');
-        }
-    } catch (error) {
-        console.warn('⚠️ تعذر تحميل مفتاح API:', error);
-    }
-    
-    // تحديث حالة النظام
-    updateAPIStatus();
-    
-    console.log('✅ تم تهيئة النظام بنجاح');
-};
-
-/**
- * إعادة تحميل الصفحة
- * @function reloadPage
- */
-function reloadPage() {
-    if (confirm('🔄 هل تريد إعادة تحميل الصفحة؟ سيتم فقدان أي بيانات غير محفوظة.')) {
-        window.location.reload();
-    }
-}
-
-// ============================================================================
-// 🛡️ وظائف مساعدة وأمان
-// ============================================================================
-
-/**
- * تحويل النص إلى HTML آمن
- * @function sanitizeHTML
- * @param {string} text - النص المدخل
- * @returns {string} النص المصفى
- */
-function sanitizeHTML(text) {
-    if (!text) return '';
-    
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-/**
- * التحقق من صحة تاريخ
- * @function isValidDate
- * @param {Date} date - التاريخ للتحقق
- * @returns {boolean} true إذا كان التاريخ صالحاً
- */
-function isValidDate(date) {
-    return date instanceof Date && !isNaN(date);
-}
-
-/**
- * تسجيل حدث في سجل النظام
- * @function logEvent
- * @param {string} event - نوع الحدث
- * @param {string} message - رسالة الحدث
- */
-function logEvent(event, message) {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${event}: ${message}`);
-    
-    // يمكن إضافة تخزين في localStorage للأحداث المهمة
-    try {
-        const logs = JSON.parse(localStorage.getItem('system_logs') || '[]');
-        logs.push({ timestamp, event, message });
-        localStorage.setItem('system_logs', JSON.stringify(logs.slice(-100))); // حفظ آخر 100 حدث فقط
-    } catch (error) {
-        console.warn('⚠️ تعذر حفظ سجل الأحداث:', error);
-    }
-}
-
-// ============================================================================
-// 📱 تحسينات للهواتف المحمولة
-// ============================================================================
-
-/**
- * التحقق إذا كان الجهاز جوال
- * @function isMobileDevice
- * @returns {boolean} true إذا كان الجهاز جوال
- */
-function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-/**
- * ضبط التخطيط للجوال
- * @function adjustLayoutForMobile
- */
-function adjustLayoutForMobile() {
-    if (isMobileDevice()) {
-        const dashboard = document.querySelector('.dashboard');
-        if (dashboard) {
-            dashboard.style.gridTemplateColumns = '1fr';
-            dashboard.style.gap = '10px';
-            dashboard.style.padding = '10px';
+            
+            // تحديث المعلومات الأولية
+            updateAPIInfo(ACTIVE_API_TYPE);
         }
         
-        // إخفاء الأزرار غير الأساسية في الهيدر
-        const btnGroup = document.querySelector('.btn-group');
-        if (btnGroup && window.innerWidth < 768) {
-            const buttons = btnGroup.querySelectorAll('button');
-            if (buttons.length > 2) {
-                for (let i = 2; i < buttons.length; i++) {
-                    buttons[i].style.display = 'none';
+        /**
+         * تحديث معلومات واجهة برمجة التطبيقات
+         * @function updateAPIInfo
+         */
+        function updateAPIInfo(apiType) {
+            const apiInfo = document.getElementById('api-info');
+            const apiKeySection = document.getElementById('api-key-section');
+            const config = API_CONFIGS[apiType];
+            
+            if (!config || apiType === 'local') {
+                apiKeySection.style.display = 'none';
+                apiInfo.innerHTML = `
+                    <h4 style="margin-top:0; color:#3498db;">🤖 النموذج المحلي</h4>
+                    <p style="margin-bottom:10px;">يعمل بدون إنترنت باستخدام قاعدة بيانات محلية.</p>
+                    <ul style="margin:5px 0; padding-right:15px;">
+                        <li>✅ لا يحتاج إلى مفتاح API</li>
+                        <li>✅ يعمل بدون اتصال إنترنت</li>
+                        <li>✅ لا توجد حدود للاستخدام</li>
+                        <li>⚠️ تحليل محدود مقارنة بالذكاء الاصطناعي</li>
+                    </ul>
+                    <div style="margin-top:10px; color:#666; font-size:0.9rem;">
+                        <strong>💡 مناسب:</strong> للمبتدئين، التجارب الأولية، والأماكن بدون إنترنت.
+                    </div>
+                `;
+                return;
+            }
+            
+            apiKeySection.style.display = 'block';
+            
+            let infoHTML = `
+                <h4 style="margin-top:0; color:#3498db;">${config.icon} ${config.name}</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div>
+                        <strong>المجانية:</strong><br>
+                        <span style="color:${config.free ? 'var(--accent-green)' : 'var(--critical-red)'};">
+                            ${config.free ? '✅ نعم' : '❌ مدفوعة'}
+                        </span>
+                    </div>
+            `;
+            
+            if (config.rateLimit) {
+                infoHTML += `
+                    <div>
+                        <strong>الحد:</strong><br>
+                        <span>${config.rateLimit} طلب/دقيقة</span>
+                    </div>
+                `;
+            }
+            
+            infoHTML += `
+                </div>
+            `;
+            
+            if (config.keyPattern) {
+                infoHTML += `
+                    <div style="margin-bottom:10px;">
+                        <strong>تنسيق المفتاح:</strong><br>
+                        <code style="background:#eee; padding:2px 6px; border-radius:3px; font-size:0.8rem;">
+                            ${config.keyPattern}...
+                        </code>
+                    </div>
+                `;
+            }
+            
+            if (config.website) {
+                infoHTML += `
+                    <div style="margin-top:15px;">
+                        <a href="${config.website}" 
+                           target="_blank" 
+                           class="btn" 
+                           style="background:var(--accent-green); width:100%; text-align:center; text-decoration:none;">
+                            🔗 احصل على مفتاح مجاني من ${config.name}
+                        </a>
+                        <small style="display:block; margin-top:5px; color:#666; text-align:center;">
+                            مجاني للاستخدام الشخصي
+                        </small>
+                    </div>
+                `;
+            }
+            
+            apiInfo.innerHTML = infoHTML;
+        }
+        
+        /**
+         * تبديل إظهار/إخفاء مفتاح API
+         * @function toggleAPIVisibility
+         */
+        function toggleAPIVisibility() {
+            const input = document.getElementById('api-key-input');
+            const checkbox = document.getElementById('show-api-key');
+            
+            if (input && checkbox) {
+                input.type = checkbox.checked ? 'text' : 'password';
+            }
+        }
+        
+        /**
+         * حفظ إعدادات واجهة برمجة التطبيقات
+         * @function saveAPISettings
+         */
+        function saveAPISettings() {
+            const apiType = document.getElementById('api-type-select').value;
+            const apiKeyInput = document.getElementById('api-key-input');
+            
+            let apiKey = apiKeyInput.value.trim();
+            
+            // إذا كان المفتاح مخفياً (••••)
+            if (apiKey === '••••••••••••••••') {
+                apiKey = ACTIVE_API_KEY;
+            }
+            
+            // التحقق من صحة المفتاح
+            if (apiKey && apiType !== 'local') {
+                const config = API_CONFIGS[apiType];
+                
+                // التحقق من تنسيق المفتاح
+                if (config.keyPattern && !apiKey.startsWith(config.keyPattern)) {
+                    if (!confirm(`⚠️ المفتاح لا يتطابق مع تنسيق ${config.name} (${config.keyPattern}...).\nهل تريد الاستمرار في الحفظ؟`)) {
+                        return;
+                    }
+                }
+                
+                // التحقق من طول المفتاح
+                if (apiKey.length < 20) {
+                    if (!confirm(`⚠️ المفتاح قصير جداً (${apiKey.length} حرف).\nهل أنت متأكد من صحته؟`)) {
+                        return;
+                    }
+                }
+            }
+            
+            // حفظ الإعدادات
+            ACTIVE_API_TYPE = apiType;
+            ACTIVE_API_KEY = apiKey;
+            
+            localStorage.setItem('active_api_type', apiType);
+            localStorage.setItem('active_api_key', apiKey);
+            
+            // تحديث واجهة المستخدم
+            updateAPIStatus();
+            
+            showAlert(`✅ تم حفظ إعدادات ${API_CONFIGS[apiType]?.name || 'النموذج المحلي'} بنجاح!`, 'success');
+            logEvent('api_settings_saved', apiType);
+            
+            closeModal();
+        }
+        
+        /**
+         * اختبار اتصال واجهة برمجة التطبيقات
+         * @async
+         * @function testAPIConnection
+         */
+        async function testAPIConnection() {
+            const apiType = document.getElementById('api-type-select').value;
+            
+            if (apiType === 'local') {
+                showAlert('✅ النموذج المحلي يعمل بدون اتصال', 'info');
+                return;
+            }
+            
+            if (!ACTIVE_API_KEY) {
+                showAlert('⚠️ الرجاء إدخال مفتاح API أولاً', 'warning');
+                return;
+            }
+            
+            const config = API_CONFIGS[apiType];
+            
+            showAlert('🔍 جاري اختبار الاتصال...', 'info');
+            
+            try {
+                let testResponse;
+                
+                switch (apiType) {
+                    case 'gemini':
+                        testResponse = await fetch(`${config.url}?key=${ACTIVE_API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{ text: 'اختبار اتصال' }]
+                                }]
+                            })
+                        });
+                        break;
+                        
+                    default:
+                        showAlert('⚠️ اختبار الاتصال غير متاح لهذه الواجهة', 'warning');
+                        return;
+                }
+                
+                if (testResponse.ok) {
+                    showAlert(`✅ اتصال ${config.name} ناجح!`, 'success');
+                } else {
+                    showAlert(`❌ فشل الاتصال: ${testResponse.status}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ خطأ في اختبار الاتصال:', error);
+                showAlert('❌ فشل الاتصال بالخادم', 'error');
+            }
+        }
+        
+        /**
+         * مسح جميع الإعدادات
+         * @function clearAPISettings
+         */
+        function clearAPISettings() {
+            if (confirm('⚠️ هل أنت متأكد من مسح جميع إعدادات واجهات برمجة التطبيقات؟\nسيتم فقدان جميع المفاتيح والإعدادات.')) {
+                ACTIVE_API_TYPE = 'local';
+                ACTIVE_API_KEY = '';
+                API_CACHE = {};
+                
+                localStorage.removeItem('active_api_type');
+                localStorage.removeItem('active_api_key');
+                localStorage.removeItem('api_cache');
+                
+                updateAPIStatus();
+                showAlert('✅ تم مسح جميع الإعدادات، سيتم استخدام النموذج المحلي.', 'success');
+                logEvent('api_settings_cleared', 'all');
+                
+                closeModal();
+            }
+        }
+        
+        /**
+         * الحصول على نوع واجهة برمجة التطبيقات النشطة
+         * @function getActiveAPIType
+         */
+        function getActiveAPIType() {
+            return ACTIVE_API_TYPE || 'local';
+        }
+        
+        /**
+         * تحديث حالة واجهة برمجة التطبيقات في الواجهة
+         * @function updateAPIStatus
+         */
+        function updateAPIStatus() {
+            const statusElement = document.getElementById('api-status');
+            const providerElement = document.getElementById('active-provider');
+            const apiType = getActiveAPIType();
+            const config = API_CONFIGS[apiType];
+            
+            if (!config) return;
+            
+            const statusText = config.name + (ACTIVE_API_KEY ? ' ✅' : ' ⚠️');
+            
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <strong>🤖 المستشار:</strong> ${statusText}
+                `;
+            }
+            
+            if (providerElement) {
+                providerElement.textContent = config.name;
+            }
+            
+            console.log(`📊 حالة واجهة برمجة التطبيقات: ${apiType} - ${ACTIVE_API_KEY ? 'مفعل' : 'غير مفعل'}`);
+        }
+        
+        /**
+         * إغلاق نافذة المودال
+         * @function closeModal
+         */
+        function closeModal() {
+            const modal = document.getElementById('api-settings-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // ============================================================================
+        // 📈 تحديث لوحة التحكم
+        // ============================================================================
+        
+        /**
+         * تحديث لوحة التحكم الرئيسية
+         * @function updateDashboard
+         */
+        function updateDashboard() {
+            if (!selectedStartDate) return;
+            
+            const currentDay = calculateCurrentDay();
+            
+            if (currentDay >= 1 && currentDay <= TOTAL_DAYS) {
+                // تحديث المؤشرات
+                document.getElementById('day-counter').textContent = currentDay;
+                document.getElementById('days-left').textContent = TOTAL_DAYS - currentDay;
+                document.getElementById('main-progress').style.width = (currentDay / TOTAL_DAYS * 100) + "%";
+                
+                // تحديث المرحلة
+                const stage = getStageForDay(currentDay);
+                const stageElement = document.getElementById('stage-name');
+                stageElement.textContent = stage.name;
+                stageElement.style.backgroundColor = getStageColor(stage.class);
+                
+                // تحديث التنبيهات
+                updateAlerts(currentDay);
+                
+                // عرض بروتوكول اليوم
+                showDailyProtocol(currentDay);
+                
+                // تحديث المخطط البياني
+                updateChart(currentDay);
+            }
+        }
+        
+        /**
+         * الحصول على لون المرحلة
+         * @function getStageColor
+         */
+        function getStageColor(stageClass) {
+            const colors = {
+                'bg-spawn': '#2ecc71',
+                'bg-casing': '#f39c12',
+                'bg-pinning': '#3498db',
+                'bg-cropping': '#9b59b6'
+            };
+            return colors[stageClass] || '#95a5a6';
+        }
+        
+        /**
+         * تحديث التنبيهات
+         * @function updateAlerts
+         */
+        function updateAlerts(currentDay) {
+            const alertZone = document.getElementById('alert-zone');
+            
+            if (!alertZone) return;
+            
+            alertZone.innerHTML = '';
+            
+            // التحقق من الأيام الحرجة
+            if ([15, 25, 32].includes(currentDay)) {
+                const nextStage = getStageForDay(currentDay + 1);
+                alertZone.innerHTML = `
+                    <div class="alert-box alert-critical">
+                        <strong>🚀 تنبيه حرج!</strong><br>
+                        غداً تبدأ مرحلة <strong>${nextStage.name}</strong>.<br>
+                        جهز التجهيزات اللازمة وتحقق من الظروف البيئية المطلوبة!
+                    </div>
+                `;
+            } else if (currentDay === 1) {
+                alertZone.innerHTML = `
+                    <div class="alert-box alert-success">
+                        <strong>🎉 بداية المشروع!</strong><br>
+                        تم بدء الدورة الزراعية بنجاح.<br>
+                        تأكد من تهيئة جميع الظروف البيئية.
+                    </div>
+                `;
+            } else if (currentDay >= 70) {
+                alertZone.innerHTML = `
+                    <div class="alert-box alert-info">
+                        <strong>⏳ نهاية الدورة قريبة!</strong><br>
+                        باقي ${TOTAL_DAYS - currentDay} أيام على انتهاء الدورة.<br>
+                        استعد لتنظيف وتجهيز الدورة القادمة.
+                    </div>
+                `;
+            } else {
+                alertZone.innerHTML = `
+                    <div class="alert-box alert-info">
+                        <strong>✅ النظام يعمل بشكل مستقر</strong><br>
+                        تأكد من مطابقة القياسات للمستهدفات المذكورة.<br>
+                        راقب أي تغيرات غير طبيعية.
+                    </div>
+                `;
+            }
+        }
+        
+        // ============================================================================
+        // 📊 المخططات البيانية
+        // ============================================================================
+        
+        /**
+         * تهيئة المخطط البياني
+         * @function initChart
+         */
+        function initChart() {
+            const ctx = document.getElementById('mainChart')?.getContext('2d');
+            
+            if (!ctx) return;
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            const labels = Array.from({length: TOTAL_DAYS}, (_, i) => i + 1);
+            const temps = labels.map(d => getStageForDay(d).tAir);
+            const co2s = labels.map(d => getStageForDay(d).co2 / 100);
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { 
+                            label: '🌡️ حرارة الهواء المثالية', 
+                            data: temps, 
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        },
+                        { 
+                            label: '🌬️ مستوى CO₂ (مقسوم على 100)', 
+                            data: co2s, 
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Cairo',
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: {
+                                family: 'Cairo'
+                            },
+                            bodyFont: {
+                                family: 'Cairo'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'الأيام',
+                                font: {
+                                    family: 'Cairo',
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'القيم',
+                                font: {
+                                    family: 'Cairo',
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        /**
+         * تحديث المخطط البياني
+         * @function updateChart
+         */
+        function updateChart(currentDay) {
+            if (!chartInstance) return;
+            
+            // إضافة مؤشر لليوم الحالي
+            chartInstance.data.datasets.forEach(dataset => {
+                dataset.pointBackgroundColor = chartInstance.data.labels.map((_, i) => 
+                    i + 1 === currentDay ? '#ff6b6b' : dataset.borderColor
+                );
+                dataset.pointRadius = chartInstance.data.labels.map((_, i) => 
+                    i + 1 === currentDay ? 6 : 3
+                );
+            });
+            
+            chartInstance.update();
+        }
+        
+        // ============================================================================
+        // 🔧 وظائف مساعدة
+        // ============================================================================
+        
+        /**
+         * عرض مؤشر التحميل
+         * @function showLoadingIndicator
+         */
+        function showLoadingIndicator(show) {
+            const loadingElement = document.getElementById('advisor-loading');
+            const advisorContent = document.getElementById('advisor-content');
+            
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'block' : 'none';
+            }
+            
+            if (!show && advisorContent && advisorContent.innerHTML.includes('انقر على أي يوم')) {
+                advisorContent.innerHTML = `
+                    <p style="color:#7f8c8d; font-size:0.9rem; text-align:center;">
+                        انقر على أي يوم في التقويم للحصول على تحليل ذكي متخصص.
+                    </p>
+                `;
+            }
+        }
+        
+        /**
+         * عرض تنبيه للمستخدم
+         * @function showAlert
+         */
+        function showAlert(message, type = 'info') {
+            const alertZone = document.getElementById('alert-zone');
+            
+            if (!alertZone) {
+                alert(message);
+                return;
+            }
+            
+            const alertBox = document.createElement('div');
+            alertBox.className = `alert-box alert-${type}`;
+            alertBox.innerHTML = message;
+            alertBox.style.animation = 'slideIn 0.3s ease';
+            
+            alertZone.insertBefore(alertBox, alertZone.firstChild);
+            
+            // إزالة التنبيه بعد 5 ثواني
+            setTimeout(() => {
+                if (alertBox.parentNode === alertZone) {
+                    alertBox.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => alertBox.remove(), 300);
+                }
+            }, 5000);
+        }
+        
+        /**
+         * عرض حل المشكلة
+         * @function showSolution
+         */
+        function showSolution() {
+            const selector = document.getElementById('troubleshooter');
+            const solutionBox = document.getElementById('solution-box');
+            
+            if (!selector || !solutionBox) return;
+            
+            const problem = selector.value;
+            const solution = PROJECT_DATA.troubleshooting[problem];
+            
+            if (solution) {
+                solutionBox.innerHTML = `
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; border-right:3px solid var(--info-blue);">
+                        <h4 style="color:var(--primary-dark); margin-top:0; margin-bottom:10px;">
+                            🔧 ${solution.problem}
+                        </h4>
+                        
+                        <div style="margin-bottom:10px;">
+                            <strong style="color:#e74c3c;">❌ السبب:</strong><br>
+                            ${solution.cause}
+                        </div>
+                        
+                        <div style="margin-bottom:10px;">
+                            <strong style="color:#2ecc71;">✅ الحل الفوري:</strong><br>
+                            ${solution.solution}
+                        </div>
+                        
+                        <div>
+                            <strong style="color:#3498db;">🛡️ الوقاية:</strong><br>
+                            ${solution.prevention}
+                        </div>
+                    </div>
+                `;
+            } else {
+                solutionBox.innerHTML = '';
+            }
+        }
+        
+        /**
+         * إعداد الحفظ التلقائي
+         * @function setupAutoSave
+         */
+        function setupAutoSave() {
+            setInterval(() => {
+                try {
+                    const projectData = {
+                        startDate: selectedStartDate?.toISOString(),
+                        activeAPI: ACTIVE_API_TYPE,
+                        lastSave: new Date().toISOString(),
+                        version: '3.0'
+                    };
+                    
+                    localStorage.setItem('mushroom_project_data', JSON.stringify(projectData));
+                    console.log('💾 تم الحفظ التلقائي');
+                } catch (error) {
+                    console.warn('⚠️ تعذر الحفظ التلقائي:', error);
+                }
+            }, 30000);
+        }
+        
+        /**
+         * تصدير البيانات
+         * @function saveToDisk
+         */
+        function saveToDisk() {
+            if (!selectedStartDate) {
+                showAlert('⚠️ الرجاء بدء مشروع أولاً قبل التصدير', 'warning');
+                return;
+            }
+            
+            const data = {
+                project: {
+                    startDate: selectedStartDate.toISOString(),
+                    exportDate: new Date().toISOString(),
+                    version: "Agaricus Expert v3.0",
+                    totalDays: TOTAL_DAYS
+                },
+                stages: PROJECT_DATA.stages,
+                currentDay: calculateCurrentDay(),
+                settings: {
+                    apiType: ACTIVE_API_TYPE,
+                    hasAPIKey: !!ACTIVE_API_KEY
+                },
+                aiCache: Object.keys(API_CACHE).length,
+                metadata: {
+                    generatedBy: 'Agaricus Expert System',
+                    exportFormat: 'JSON v1.0'
+                }
+            };
+            
+            try {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { 
+                    type: "application/json;charset=utf-8" 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `مشروع_فطر_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showAlert('✅ تم تصدير البيانات بنجاح', 'success');
+                logEvent('export_data', `تصدير مشروع بتاريخ ${selectedStartDate.toISOString().slice(0,10)}`);
+                
+            } catch (error) {
+                console.error('❌ خطأ في تصدير البيانات:', error);
+                showAlert('❌ حدث خطأ أثناء تصدير البيانات', 'error');
+            }
+        }
+        
+        /**
+         * حساب اليوم الحالي
+         * @function calculateCurrentDay
+         */
+        function calculateCurrentDay() {
+            if (!selectedStartDate) return 0;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const start = new Date(selectedStartDate);
+            start.setHours(0, 0, 0, 0);
+            
+            const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+            return Math.max(1, Math.min(diff, TOTAL_DAYS));
+        }
+        
+        /**
+         * حساب التاريخ من رقم اليوم
+         * @function calculateDateFromDay
+         */
+        function calculateDateFromDay(dayNumber) {
+            if (!selectedStartDate) return new Date();
+            
+            const date = new Date(selectedStartDate);
+            date.setDate(selectedStartDate.getDate() + (dayNumber - 1));
+            return date;
+        }
+        
+        /**
+         * تحديث حالة المهمة
+         * @function updateTaskCompletion
+         */
+        function updateTaskCompletion(dayNumber, taskIndex) {
+            const checkbox = document.getElementById(`task-${dayNumber}-${taskIndex}`);
+            if (!checkbox) return;
+            
+            const taskState = {
+                day: dayNumber,
+                taskIndex: taskIndex,
+                completed: checkbox.checked,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const taskStates = JSON.parse(localStorage.getItem('task_states') || '{}');
+                taskStates[`${dayNumber}_${taskIndex}`] = taskState;
+                localStorage.setItem('task_states', JSON.stringify(taskStates));
+                
+                console.log(`📝 تم تحديث حالة المهمة ${dayNumber}-${taskIndex}: ${checkbox.checked ? 'مكتملة' : 'غير مكتملة'}`);
+            } catch (error) {
+                console.warn('⚠️ تعذر حفظ حالة المهمة:', error);
+            }
+        }
+        
+        /**
+         * تحميل حالة المهام المحفوظة
+         * @function loadTaskState
+         */
+        function loadTaskState(dayNumber) {
+            try {
+                const taskStates = JSON.parse(localStorage.getItem('task_states') || '{}');
+                
+                for (let i = 0; i < 5; i++) {
+                    const checkbox = document.getElementById(`task-${dayNumber}-${i}`);
+                    if (checkbox) {
+                        const state = taskStates[`${dayNumber}_${i}`];
+                        checkbox.checked = state ? state.completed : false;
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ تعذر تحميل حالة المهام:', error);
+            }
+        }
+        
+        /**
+         * تسجيل حدث في سجل النظام
+         * @function logEvent
+         */
+        function logEvent(type, message) {
+            const timestamp = new Date().toISOString();
+            const logEntry = { timestamp, type, message };
+            
+            console.log(`[${timestamp}] ${type}: ${message}`);
+            
+            try {
+                const logs = JSON.parse(localStorage.getItem('system_logs') || '[]');
+                logs.push(logEntry);
+                localStorage.setItem('system_logs', JSON.stringify(logs.slice(-50)));
+            } catch (error) {
+                console.warn('⚠️ تعذر حفظ سجل الأحداث:', error);
+            }
+        }
+        
+        /**
+         * التحقق إذا كان الجهاز جوال
+         * @function isMobileDevice
+         */
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        /**
+         * ضبط التخطيط للجوال
+         * @function adjustLayoutForMobile
+         */
+        function adjustLayoutForMobile() {
+            if (isMobileDevice()) {
+                const dashboard = document.querySelector('.dashboard');
+                if (dashboard) {
+                    dashboard.style.gridTemplateColumns = '1fr';
+                    dashboard.style.gap = '15px';
+                    dashboard.style.padding = '10px';
+                }
+                
+                const btnGroup = document.querySelector('.btn-group');
+                if (btnGroup && window.innerWidth < 768) {
+                    btnGroup.style.flexDirection = 'column';
+                    btnGroup.style.width = '100%';
+                }
+                
+                const calendarGrid = document.querySelector('.calendar-grid');
+                if (calendarGrid) {
+                    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                    calendarGrid.style.gap = '3px';
                 }
             }
         }
-    }
-}
-
-// استدعاء ضبط التخطيط عند تحميل الصفحة وتغيير حجم النافذة
-window.addEventListener('load', adjustLayoutForMobile);
-window.addEventListener('resize', adjustLayoutForMobile);
-</script>
-
+        
+        // ============================================================================
+        // 🚀 تهيئة النظام عند التحميل
+        // ============================================================================
+        
+        /**
+         * تهيئة النظام الكامل
+         */
+        window.onload = function() {
+            console.log('🚀 بدء تهيئة نظام Agaricus Expert v3.0...');
+            logEvent('system_start', 'بدء النظام');
+            
+            // تحميل إعدادات واجهات برمجة التطبيقات
+            try {
+                const savedAPIType = localStorage.getItem('active_api_type');
+                const savedAPIKey = localStorage.getItem('active_api_key');
+                const savedCache = localStorage.getItem('api_cache');
+                
+                if (savedAPIType) ACTIVE_API_TYPE = savedAPIType;
+                if (savedAPIKey) ACTIVE_API_KEY = savedAPIKey;
+                if (savedCache) API_CACHE = JSON.parse(savedCache);
+                
+                console.log(`🤖 واجهة برمجة التطبيقات النشطة: ${ACTIVE_API_TYPE}`);
+            } catch (error) {
+                console.warn('⚠️ تعذر تحميل إعدادات واجهات برمجة التطبيقات:', error);
+            }
+            
+            // تحميل المشروع المحفوظ
+            try {
+                const savedStart = localStorage.getItem('mushroom_start');
+                if (savedStart) {
+                    document.getElementById('startDate').value = savedStart;
+                    selectedStartDate = new Date(savedStart);
+                    
+                    if (!isNaN(selectedStartDate.getTime())) {
+                        initializeProject();
+                        console.log('✅ تم تحميل المشروع المحفوظ');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ خطأ في تحميل البيانات المحفوظة:', error);
+            }
+            
+            // تحديث حالة النظام
+            updateAPIStatus();
+            adjustLayoutForMobile();
+            
+            // إضافة مستمعي الأحداث
+            window.addEventListener('resize', adjustLayoutForMobile);
+            
+            console.log('✅ تم تهيئة النظام بنجاح');
+            showAlert('مرحباً بك في نظام Agaricus Expert v3.0 👋', 'info');
+            
+            // تسجيل إحصائيات النظام
+            const stats = {
+                apiType: ACTIVE_API_TYPE,
+                hasKey: !!ACTIVE_API_KEY,
+                cacheSize: Object.keys(API_CACHE).length,
+                userAgent: navigator.userAgent,
+                screenSize: `${window.innerWidth}x${window.innerHeight}`
+            };
+            
+            logEvent('system_stats', JSON.stringify(stats));
+        };
+    </script>
 </body>
 </html>
