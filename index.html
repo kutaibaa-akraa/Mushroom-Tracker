@@ -926,6 +926,15 @@ function initChart() {
     });
 }
 
+
+
+
+
+// ============================================================================
+// 🤖 نظام المستشار الذكي (DeepSeek AI)
+// ============================================================================
+
+
 // ============================================================================
 // 🤖 نظام المستشار الذكي (DeepSeek AI) - نسخة GitHub Pages
 // ============================================================================
@@ -1129,27 +1138,6 @@ function useLocalModel(dayNumber) {
     const analysis = generateLocalAnalysis(dayNumber, stage);
     displayAIResponse(dayNumber, stage, analysis);
 }
-
-// تحديث واجهة إعدادات API لإظهار التحذير
-function showAPISettings() {
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    // ... باقي كود المودال ...
-    
-    if (isGitHubPages) {
-        modalContent.innerHTML += `
-            <div class="alert-box alert-critical" style="margin-top: 15px;">
-                <strong>⚠️ تحذير:</strong> DeepSeek API <strong>لا يعمل</strong> على GitHub Pages بسبب قيود CORS.<br>
-                للحصول على ميزات الذكاء الاصطناعي الكاملة، شغل الملف <strong>محلياً على جهازك</strong>.
-            </div>
-        `;
-    }
-}
-
-// ============================================================================
-// 🤖 نظام المستشار الذكي (DeepSeek AI)
-// ============================================================================
-
 
 
 function displayLocalAnalysisOnly(dayNumber, stage) {
@@ -1532,6 +1520,8 @@ function showAPISettings() {
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'modal-overlay';
     modalOverlay.id = 'api-settings-modal';
+    const isGitHubPages = window.location.hostname.includes('github.io');
+
     
     modalOverlay.innerHTML = `
         <div class="modal-content">
@@ -1591,6 +1581,15 @@ function showAPISettings() {
             closeModal();
         }
     });
+	 
+	 if (isGitHubPages) {
+        modalContent.innerHTML += `
+            <div class="alert-box alert-critical" style="margin-top: 15px;">
+                <strong>⚠️ تحذير:</strong> DeepSeek API <strong>لا يعمل</strong> على GitHub Pages بسبب قيود CORS.<br>
+                للحصول على ميزات الذكاء الاصطناعي الكاملة، شغل الملف <strong>محلياً على جهازك</strong>.
+            </div>
+        `;
+    }
 }
 
 /**
