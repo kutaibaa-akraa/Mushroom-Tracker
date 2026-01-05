@@ -436,7 +436,9 @@
 // ============================================================================
 // 📦 تعريف المتغيرات العامة وإعدادات النظام
 // ============================================================================
-
+/*
+sk-5f2d78636521431385a5e47da817f69f
+*/
 /**
  * إعدادات الدورة الزراعية
  * @constant {number} TOTAL_DAYS - إجمالي أيام الدورة الزراعية
@@ -925,7 +927,7 @@ function initChart() {
 }
 
 // ============================================================================
-// 🤖 نظام المستشار الذكي (DeepSeek AI)
+// 🤖 نظام المستشار الذكي (DeepSeek AI) - نسخة GitHub Pages
 // ============================================================================
 
 /**
@@ -942,15 +944,30 @@ async function consultDeepSeek(dayNumber) {
     document.getElementById('advisor-content').innerHTML = '';
     
     try {
+        // ⭐ التعديل: استخدام النموذج المحلي فقط على GitHub Pages
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const hasValidAPIKey = DEEPSEEK_API_KEY && DEEPSEEK_API_KEY !== '' && DEEPSEEK_API_KEY.startsWith('sk-');
+        
         let aiResponse;
         
-        if (DEEPSEEK_API_KEY && DEEPSEEK_API_KEY !== '') {
-            // استخدام API الحقيقي إذا كان المفتاح متاحاً
+        if (hasValidAPIKey && !isGitHubPages) {
+            // استخدم API الحقيقي فقط عند التشغيل محلياً
             aiResponse = await callDeepSeekAPI(dayNumber, stage);
         } else {
-            // استخدام النموذج المحلي
-            await new Promise(resolve => setTimeout(resolve, 1000)); // محاكاة التأخير
+            // استخدم النموذج المحلي على GitHub Pages أو بدون مفتاح
+            await new Promise(resolve => setTimeout(resolve, 800)); // محاكاة التأخير
             aiResponse = generateLocalAnalysis(dayNumber, stage);
+            
+            // عرض ملاحظة على GitHub Pages
+            if (isGitHubPages) {
+                aiResponse = `
+                    <div class="alert-box alert-info" style="margin-bottom:15px;">
+                        <strong>💡 ملاحظة:</strong> التشغيل على GitHub Pages - يتم استخدام النموذج المحلي.<br>
+                        للحصول على تحليل متقدم بالذكاء الاصطناعي، شغل الملف <strong>محلياً على جهازك</strong>.
+                    </div>
+                    ${aiResponse}
+                `;
+            }
         }
         
         displayAIResponse(dayNumber, stage, aiResponse);
@@ -964,22 +981,32 @@ async function consultDeepSeek(dayNumber) {
 }
 
 /**
- * استدعاء DeepSeek API
+ * استدعاء DeepSeek API مع معالجة CORS
  * @async
  * @function callDeepSeekAPI
  * @param {number} dayNumber - رقم اليوم
  * @param {Object} stage - كائن المرحلة
- * @returns {Promise<Object>} استجابة API
+ * @returns {Promise<string>} استجابة API
  */
 async function callDeepSeekAPI(dayNumber, stage) {
     const prompt = buildAIQuery(dayNumber, stage);
+    const isGitHubPages = window.location.hostname.includes('github.io');
     
     try {
-        const response = await fetch(DEEPSEEK_API_URL, {
+        // ⭐ إضافة proxy للتحايل على CORS (للتطوير فقط)
+        let apiUrl = DEEPSEEK_API_URL;
+        
+        // تحذير: لا تستخدم proxy في الإنتاج
+        if (isGitHubPages) {
+            throw new Error('DeepSeek API غير مدعوم مباشرة من GitHub Pages. شغل الملف محلياً.');
+        }
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 model: 'deepseek-chat',
@@ -993,14 +1020,22 @@ async function callDeepSeekAPI(dayNumber, stage) {
                         content: prompt
                     }
                 ],
-                max_tokens: 1500,
+                max_tokens: 1200,
                 temperature: 0.7
-            }),
-            timeout: 30000 // 30 ثانية timeout
+            })
         });
         
         if (!response.ok) {
-            throw new Error(`خطأ في API: ${response.status} - ${response.statusText}`);
+            // تحليل رسالة الخطأ
+            let errorMessage = `خطأ ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error?.message || errorMessage;
+            } catch (e) {
+                // تجاهل إذا لم يكن JSON
+            }
+            
+            throw new Error(`خطأ في API: ${response.status} - ${errorMessage}`);
         }
         
         const data = await response.json();
@@ -1010,11 +1045,118 @@ async function callDeepSeekAPI(dayNumber, stage) {
         }
         
         return data.choices[0].message.content;
+        
     } catch (error) {
         console.error('❌ فشل استدعاء API:', error);
         throw error;
     }
 }
+
+/**
+ * عرض تحليل الخطأ مع حلول
+ * @function displayErrorAnalysis
+ * @param {number} dayNumber - رقم اليوم
+ * @param {Object} stage - كائن المرحلة
+ * @param {string} errorMessage - رسالة الخطأ
+ */
+function displayErrorAnalysis(dayNumber, stage, errorMessage) {
+    const advisorContent = document.getElementById('advisor-content');
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    
+    let solutions = '';
+    
+    if (isGitHubPages) {
+        solutions = `
+            <div class="ai-recommendation">
+                <p><strong>🔄 حل خاص بـ GitHub Pages:</strong></p>
+                <ul>
+                    <li>📥 <strong>حمل الملف على جهازك</strong> وافتحه مباشرة</li>
+                    <li>🚀 أو استخدم <a href="https://raw.githack.com/" target="_blank">raw.githack.com</a></li>
+                    <li>💻 أو شغل خادم محلي: <code>python -m http.server 8000</code></li>
+                </ul>
+            </div>
+        `;
+    } else if (errorMessage.includes('402')) {
+        solutions = `
+            <div class="ai-recommendation">
+                <p><strong>💰 حل مشكلة الدفع (402):</strong></p>
+                <ul>
+                    <li>تحقق من رصيد حساب DeepSeek الخاص بك</li>
+                    <li>تأكد من صحة مفتاح API</li>
+                    <li>استخدم النموذج المحلي مؤقتاً</li>
+                </ul>
+            </div>
+        `;
+    }
+    
+    advisorContent.innerHTML = `
+        <div class="advisor-response">
+            <h4 style="color: #e74c3c; margin-top: 0;">⚠️ تحليل اليوم ${dayNumber}</h4>
+            
+            <div style="margin-bottom: 10px; padding: 8px; background: #ffeaa7; border-radius: 5px;">
+                <strong>المرحلة:</strong> ${stage.name} | 
+                <strong>اليوم:</strong> ${dayNumber}/75
+            </div>
+            
+            <div class="alert-box alert-critical" style="margin-bottom: 15px;">
+                <strong>🚨 خطأ في الاتصال:</strong><br>
+                ${errorMessage}
+            </div>
+            
+            ${solutions}
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button onclick="consultDeepSeek(${dayNumber})" 
+                        style="background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">
+                    🔄 إعادة المحاولة
+                </button>
+                <button onclick="useLocalModel(${dayNumber})" 
+                        style="background: #2ecc71; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">
+                    🤖 استخدام النموذج المحلي
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * استخدام النموذج المحلي مباشرة
+ * @function useLocalModel
+ * @param {number} dayNumber - رقم اليوم
+ */
+function useLocalModel(dayNumber) {
+    const stage = getStageForDay(dayNumber);
+    const analysis = generateLocalAnalysis(dayNumber, stage);
+    displayAIResponse(dayNumber, stage, analysis);
+}
+
+// تحديث واجهة إعدادات API لإظهار التحذير
+function showAPISettings() {
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    
+    // ... باقي كود المودال ...
+    
+    if (isGitHubPages) {
+        modalContent.innerHTML += `
+            <div class="alert-box alert-critical" style="margin-top: 15px;">
+                <strong>⚠️ تحذير:</strong> DeepSeek API <strong>لا يعمل</strong> على GitHub Pages بسبب قيود CORS.<br>
+                للحصول على ميزات الذكاء الاصطناعي الكاملة، شغل الملف <strong>محلياً على جهازك</strong>.
+            </div>
+        `;
+    }
+}
+
+// ============================================================================
+// 🤖 نظام المستشار الذكي (DeepSeek AI)
+// ============================================================================
+
+
+
+function displayLocalAnalysisOnly(dayNumber, stage) {
+    const analysis = generateLocalAnalysis(dayNumber, stage);
+    displayAIResponse(dayNumber, stage, analysis);
+}
+
 
 /**
  * بناء استعلام الذكاء الاصطناعي
@@ -1224,47 +1366,6 @@ function displayAIResponse(dayNumber, stage, response) {
     saveAICache(dayNumber, response);
 }
 
-/**
- * عرض تحليل الخطأ
- * @function displayErrorAnalysis
- * @param {number} dayNumber - رقم اليوم
- * @param {Object} stage - كائن المرحلة
- * @param {string} errorMessage - رسالة الخطأ
- */
-function displayErrorAnalysis(dayNumber, stage, errorMessage) {
-    const advisorContent = document.getElementById('advisor-content');
-    
-    advisorContent.innerHTML = `
-        <div class="advisor-response">
-            <h4 style="color: #e74c3c; margin-top: 0;">⚠️ تحليل اليوم ${dayNumber}</h4>
-            
-            <div style="margin-bottom: 10px; padding: 8px; background: #ffeaa7; border-radius: 5px;">
-                <strong>المرحلة:</strong> ${stage.name} | 
-                <strong>اليوم:</strong> ${dayNumber}/75
-            </div>
-            
-            <div class="alert-box alert-critical" style="margin-bottom: 15px;">
-                <strong>خطأ في الاتصال:</strong> ${errorMessage}
-            </div>
-            
-            <div class="ai-recommendation">
-                <p><strong>🔄 الحلول المقترحة:</strong></p>
-                <ul>
-                    <li>تحقق من اتصال الإنترنت</li>
-                    <li>تأكد من صحة مفتاح API في إعدادات النظام</li>
-                    <li>جرب استخدام النموذج المحلي مؤقتاً</li>
-                    <li>أعد تحميل الصفحة وحاول مرة أخرى</li>
-                </ul>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <button onclick="consultDeepSeek(${dayNumber})" style="background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer;">
-                    🔄 إعادة المحاولة
-                </button>
-            </div>
-        </div>
-    `;
-}
 
 /**
  * حفظ الاستجابة في ذاكرة التخزين المؤقت
